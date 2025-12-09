@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Created-By: IntelliJ IDEA
+Built-By: karti
+Build-Jdk: Oracle OpenJDK 21.0.7
+Implementation-Title: Sahaayata - A Nutrition Assistance
+Implementation-Version: 0.0.1-SNAPSHOT
+Implementation-Vendor-Id: com.sahaayata
+Main-Class: ${start-class}
+
