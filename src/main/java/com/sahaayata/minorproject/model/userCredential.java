@@ -1,13 +1,20 @@
 package com.sahaayata.minorproject.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class userCredential {
-    @Id
+
+    @Id // Specifies the primary key
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment ID
+    private Long id;
+
+    @Column(unique = true, nullable = false )
     private String username;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
     private String password;
 
     public String getUsername() {
@@ -38,7 +45,7 @@ public class userCredential {
     public String toString() {
         return "userCredential{" +
                 "username='" + username + '\'' +
-                ", emial='" + email + '\'' +
+                ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 '}';
     }
