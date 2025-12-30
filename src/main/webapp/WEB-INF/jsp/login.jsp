@@ -221,6 +221,12 @@
             }
         });
     })();
+    window.addEventListener('pageshow', function(event) {
+        var form = document.getElementById('login-form');
+        if (form) {
+            form.reset(); // Saare fields empty kar dega
+        }
+    });
 </script>
 </body>
 </html>

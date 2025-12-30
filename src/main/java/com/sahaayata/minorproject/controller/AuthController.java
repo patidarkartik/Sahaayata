@@ -1,0 +1,227 @@
+package com.sahaayata.minorproject.controller;
+
+import com.sahaayata.minorproject.dto.LoginRequest;
+import com.sahaayata.minorproject.model.userCredential;
+import com.sahaayata.minorproject.repository.UserRepository;
+import com.sahaayata.minorproject.service.UserService;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+@Controller
+public class AuthController {
+
+    @Autowired
+    private UserService userService; // Registration ke liye
+
+    @Autowired
+    private UserRepository userRepository; // Login/Onboarding/Settings updates ke liye
+
+
+    // 1. PAGE VIEW METHODS (GET Requests)
+
+    @GetMapping("/register")
+    public String showRegisterPage() {
+        return "register"; // register.jsp
+    }
+
+    @GetMapping("/login")
+    public String showLoginPage() {
+        return "login"; // login.jsp
+    }
+
+    @GetMapping("/dashboard")
+    public String showDashboard(HttpSession session, Model model) {
+        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        // Agar user login hai lekin Onboarding bacha hai, wahan bhejo
+        if (!user.isOnboardingCompleted()) {
+            return "redirect:/onboarding";
+        }
+
+        model.addAttribute("username", user.getUsername());
+        return "dashboard"; // dashboard.jsp
+    }
+
+    @GetMapping("/onboarding")
+    public String showOnboardingPage(HttpSession session) {
+        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        if (user == null) return "redirect:/login";
+
+        // Agar already complete hai, to wapas dashboard bhejo
+        if (user.isOnboardingCompleted()) {
+            return "redirect:/dashboard";
+        }
+
+        return "onboarding"; // onboarding.jsp
+    }
+
+
+    // 2. SETTINGS & PROFILE (GET & POST)
+
+    // Settings Page Dikhana
+    @GetMapping("/settings")
+    public String showSettingsPage(HttpSession session) {
+        // Security Check
+        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        // Database se fresh data fetch karo (Recommended)
+        userCredential dbUser = userRepository.findById(user.getId()).orElse(null);
+
+        if (dbUser != null) {
+            session.setAttribute("loggedInUser", dbUser); // Session Refresh
+        } else {
+            session.invalidate(); // Agar user DB me nahi hai to logout
+            return "redirect:/login";
+        }
+
+        return "settings"; // settings.jsp load karega
+    }
+
+    // ✅ UPDATED PROFILE LOGIC (Ab Weight, Height, Age bhi save karega)
+    @PostMapping("/update-profile")
+    public String updateProfile(@RequestParam("username") String username,
+                                @RequestParam("gender") String gender,
+                                @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
+                                @RequestParam("weight") double weight,   // ✅ Added
+                                @RequestParam("height") double height,   // ✅ Added
+                                @RequestParam("age") int age,            // ✅ Added
+                                HttpSession session) {
+
+        // Session check
+        userCredential currentUser = (userCredential) session.getAttribute("loggedInUser");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        // Database se user nikalo
+        userCredential dbUser = userRepository.findById(currentUser.getId()).orElse(null);
+
+        if (dbUser != null) {
+            // Basic Info Update
+            dbUser.setUsername(username);
+            dbUser.setGender(gender);
+
+            // Phone Number Update (Optional check)
+            if (phoneNumber != null && !phoneNumber.isEmpty()) {
+                dbUser.setPhoneNumber(phoneNumber);
+            }
+
+            // ✅ Health Stats Update
+            dbUser.setWeight(weight);
+            dbUser.setHeight(height);
+            dbUser.setAge(age);
+
+            // Database mein save karo
+            userRepository.save(dbUser);
+
+            // Session mein bhi update karo taaki Dashboard par nayi calories dikhein
+            session.setAttribute("loggedInUser", dbUser);
+        }
+
+        // Wapas settings page par bhejo
+        return "redirect:/settings";
+    }
+
+
+
+    // 3. API METHODS (POST Requests - JSON)
+
+    // --- REGISTER LOGIC ---
+    @PostMapping("/register")
+    @ResponseBody // JSON return karne ke liye
+    public ResponseEntity<?> registerUser(@RequestBody userCredential user) {
+        try {
+            // Service call karke user save karein
+            userCredential registeredUser = userService.registerUser(user);
+            return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
+        }
+        catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(
+                    Collections.singletonMap("message", e.getMessage()),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+        catch (Exception e) {
+            return new ResponseEntity<>(
+                    Collections.singletonMap("message", "Registration failed due to server error."),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    // --- LOGIN LOGIC ---
+    @PostMapping("/login")
+    @ResponseBody
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest, HttpSession session) {
+
+        userCredential user = userRepository.findByEmail(loginRequest.getEmail());
+
+        // Password Check
+        if (user != null && user.getPassword().equals(loginRequest.getPassword())) {
+
+            session.setAttribute("loggedInUser", user);
+
+            Map<String, String> response = new HashMap<>();
+
+            if (user.isOnboardingCompleted()) {
+                response.put("redirectUrl", "/dashboard");
+            } else {
+                response.put("redirectUrl", "/onboarding");
+            }
+
+            return ResponseEntity.ok(response);
+
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("message", "Invalid Email or Password"));
+        }
+    }
+
+    // --- ONBOARDING SAVE LOGIC (Form Submit) ---
+    @PostMapping("/save-onboarding")
+    public String saveOnboardingData(@ModelAttribute userCredential formData, HttpSession session) {
+
+        userCredential sessionUser = (userCredential) session.getAttribute("loggedInUser");
+        if (sessionUser == null) return "redirect:/login";
+
+        userCredential dbUser = userRepository.findById(sessionUser.getId()).orElse(null);
+
+        if (dbUser != null) {
+            dbUser.setAge(formData.getAge());
+            dbUser.setGender(formData.getGender());
+            dbUser.setHeight(formData.getHeight());
+            dbUser.setWeight(formData.getWeight());
+            dbUser.setActivityLevel(formData.getActivityLevel());
+
+            dbUser.setOnboardingCompleted(true);
+
+            userRepository.save(dbUser);
+            session.setAttribute("loggedInUser", dbUser);
+        }
+
+        return "redirect:/dashboard";
+    }
+
+    // --- LOGOUT LOGIC ---
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
+    }
+}

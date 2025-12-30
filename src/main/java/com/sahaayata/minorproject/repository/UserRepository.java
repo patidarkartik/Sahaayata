@@ -4,13 +4,12 @@ import com.sahaayata.minorproject.model.userCredential;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-
-// JPARepo<Entity_type,PrimaryKeytype>
 @Repository
-public interface UserCredentialRepo extends JpaRepository<userCredential,Long> {
-    // methods used : save(), findById(), findAll(), deleteById() etc.
+public interface UserRepository extends JpaRepository<userCredential, Long> {
 
-    userCredential findByUsername(String username);
-
+    // Login ke liye ye method sabse zaroori hai
     userCredential findByEmail(String email);
+
+    // Registration ke waqt duplicate check karne ke liye
+    userCredential findByUsername(String username);
 }
