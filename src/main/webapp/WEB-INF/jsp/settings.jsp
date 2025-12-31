@@ -234,7 +234,7 @@
                         <hr class="border-subtle-light dark:border-subtle-dark my-4">
 
                         <div class="space-y-2">
-                            <a href="#" class="block w-full text-left py-2 px-3 rounded hover:bg-background-light dark:hover:bg-background-dark transition text-sm">
+                            <a href="/change-password" class="block w-full text-left py-2 px-3 rounded hover:bg-background-light dark:hover:bg-background-dark transition text-sm">
                                 Change Password
                             </a>
                             <a href="#" class="block w-full text-left py-2 px-3 rounded hover:bg-background-light dark:hover:bg-background-dark transition text-sm">

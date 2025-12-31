@@ -224,4 +224,53 @@ public class AuthController {
         session.invalidate();
         return "redirect:/login";
     }
+
+    // ==========================================
+    // 6. CHANGE PASSWORD LOGIC
+    // ==========================================
+
+    // 1. Show Change Password Page
+    @GetMapping("/change-password")
+    public String showChangePasswordPage(HttpSession session) {
+        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        return "change-password"; // change-password.jsp load karega
+    }
+
+    // 2. Process Password Update
+    @PostMapping("/change-password")
+    public String updatePassword(@RequestParam("new-password") String newPassword,
+                                 @RequestParam("confirm-password") String confirmPassword,
+                                 HttpSession session,
+                                 Model model) {
+
+        userCredential sessionUser = (userCredential) session.getAttribute("loggedInUser");
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        // 1. Check if passwords match
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "Passwords do not match!");
+            return "change-password";
+        }
+
+        // 2. Fetch User from DB
+        userCredential dbUser = userRepository.findById(sessionUser.getId()).orElse(null);
+
+        if (dbUser != null) {
+            // 3. Update Password
+            dbUser.setPassword(newPassword); // Note: Production me encryption (BCrypt) use karein
+            userRepository.save(dbUser);
+
+            // 4. Update Session
+            session.setAttribute("loggedInUser", dbUser);
+        }
+
+        // Success ke baad settings page par bhej do
+        return "redirect:/settings";
+    }
+
 }

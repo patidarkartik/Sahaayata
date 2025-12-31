@@ -3,19 +3,17 @@
 
 <%-- 1. SECURITY & NO-CACHE LOGIC --%>
 <%
-    // Browser ko bolo ki is page ko cache na kare (Logout issue fix)
-    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1
-    response.setHeader("Pragma", "no-cache"); // HTTP 1.0
-    response.setDateHeader("Expires", 0); // Proxies
+    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    response.setHeader("Pragma", "no-cache");
+    response.setDateHeader("Expires", 0);
 
-    // SESSION CHECK
     userCredential user = (userCredential) session.getAttribute("loggedInUser");
     if (user == null) {
         response.sendRedirect("/login");
         return;
     }
 
-    // 2. TDEE CALCULATION (Auto-Calculate Calories)
+    // 2. TDEE CALCULATION
     double bmr = 0;
     if ("Male".equalsIgnoreCase(user.getGender())) {
         bmr = (10 * user.getWeight()) + (6.25 * user.getHeight()) - (5 * user.getAge()) + 5;
@@ -23,7 +21,6 @@
         bmr = (10 * user.getWeight()) + (6.25 * user.getHeight()) - (5 * user.getAge()) - 161;
     }
 
-    // Parse Activity Level
     double activityMultiplier = 1.2;
     try {
         activityMultiplier = Double.parseDouble(user.getActivityLevel());
@@ -31,7 +28,7 @@
 
     int tdee = (int) (bmr * activityMultiplier);
 
-    // Dummy Data (Consumed Calories)
+    // Dummy Data
     int consumed = 0;
     int remaining = tdee - consumed;
 %>
@@ -101,13 +98,14 @@
 
                 <nav class="hidden md:flex items-center gap-8">
                     <a class="text-sm font-medium text-primary dark:text-primary" href="/dashboard">Dashboard</a>
-                    <a class="text-sm font-medium text-muted-light dark:text-muted-dark hover:text-primary transition-colors" href="#">Recipes</a>
-                    <a class="text-sm font-medium text-muted-light dark:text-muted-dark hover:text-primary transition-colors" href="#">Community</a>
+
+                    <a class="text-sm font-medium text-muted-light dark:text-muted-dark hover:text-primary transition-colors" href="/my-recipes">Recipes</a>
+
+                    <a class="text-sm font-medium text-muted-light dark:text-muted-dark hover:text-primary transition-colors" href="/community">Community</a>
                 </nav>
 
                 <div class="flex items-center gap-4">
-
-                    <a href="/settings" class="hidden md:block text-sm font-semibold text-foreground-light hover:text-primary transition-colors" title="Go to Settings">
+                    <a href="/settings" class="hidden md:block text-sm font-semibold text-foreground-light hover:text-primary transition-colors">
                         <%= user.getUsername() %>
                     </a>
 
@@ -232,16 +230,11 @@
     const circle = document.getElementById('calorie-ring');
     const radius = circle.r.baseVal.value;
     const circumference = 2 * Math.PI * radius;
-
-    // Set static circumference
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
 
-    // Calculate Progress (Consumed / TDEE)
-    // Abhi consumed 0 hai, to progress 0 hogi.
     const consumed = <%= consumed %>;
     const target = <%= tdee %>;
     const percent = Math.min(consumed / target, 1);
-
     const offset = circumference - (percent * circumference);
     circle.style.strokeDashoffset = offset;
 </script>
