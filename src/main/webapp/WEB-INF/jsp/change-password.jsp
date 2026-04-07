@@ -1,129 +1,117 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page import="com.sahaayata.minorproject.model.userCredential" %>
-
-<%-- 1. SECURITY CHECK --%>
+<%@ page contentType="text/html;charset=UTF-8" language="java"%>
+<%@ page import="com.sahaayata.minorproject.model.userCredential"%>
 <%
-    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    response.setHeader("Pragma", "no-cache");
-    response.setDateHeader("Expires", 0);
-
+    response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
     userCredential user = (userCredential) session.getAttribute("loggedInUser");
-    if (user == null) {
-        response.sendRedirect("/login");
-        return;
-    }
-
-    // Error message fetch karna (agar controller se aaya ho)
+    if (user == null) { response.sendRedirect("/login"); return; }
     String error = (String) request.getAttribute("error");
+    String success = (String) request.getAttribute("success");
 %>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Sahaayata - Set New Password</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#607AFB",
-                        "background-light": "#f5f6f8",
-                        "background-dark": "#0f1323",
-                        "foreground-light": "#111714",
-                        "foreground-dark": "#f6f8f7",
-                        "card-light": "#ffffff",
-                        "card-dark": "#1a2e22",
-                        "input-light": "#f0f4f2",
-                        "input-dark": "#1f3a2c",
-                        "subtle-light": "#648772",
-                        "subtle-dark": "#a0c0b0"
-                    },
-                    fontFamily: {display: "Work Sans"},
-                    borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}
-                }
-            }
-        };
-    </script>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Change Password — Sahaayata</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <style>
-        .font-display { font-family: 'Work Sans', sans-serif; }
+        :root{--primary:#4F6FEB;--primary-light:#EEF1FD;--primary-dark:#3451C7;--sidebar-width:240px;--sidebar-bg:#fff;--sidebar-border:#E8EAED;--text-main:#1a1d23;--text-muted:#6b7280;--text-light:#9ca3af;--bg-page:#F4F6FB;--bg-card:#fff;--nav-hover:#F4F6FB;--nav-active-bg:#EEF1FD;--nav-active-text:#4F6FEB;--radius:10px;--font:'DM Sans',system-ui,sans-serif;}
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:var(--font);background:var(--bg-page);color:var(--text-main);min-height:100vh;}
+        .app-layout{display:flex;min-height:100vh;}
+        .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .25s ease;overflow-y:auto;}
+        .sidebar-brand{display:flex;align-items:center;gap:10px;padding:20px 20px 16px;border-bottom:1px solid var(--sidebar-border);color:var(--primary);}
+        .brand-icon{width:26px;height:26px;}.brand-name{font-size:17px;font-weight:700;color:var(--text-main);letter-spacing:-.3px;}
+        .sidebar-user{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--sidebar-border);}
+        .user-avatar{width:36px;height:36px;border-radius:50%;}.user-name{font-size:13px;font-weight:600;}.user-role{font-size:11px;color:var(--text-light);}
+        .sidebar-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;}
+        .nav-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);padding:8px 8px 6px;}
+        .nav-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;text-decoration:none;color:var(--text-muted);font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
+        .nav-link:hover{background:var(--nav-hover);color:var(--text-main);}.nav-link.active{background:var(--nav-active-bg);color:var(--nav-active-text);font-weight:600;}
+        .nav-icon{width:16px;height:16px;flex-shrink:0;}
+        .sidebar-footer{padding:12px;border-top:1px solid var(--sidebar-border);}
+        .logout-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;border:none;background:none;color:#ef4444;font-size:13.5px;font-weight:500;cursor:pointer;text-decoration:none;transition:background .15s;width:100%;}.logout-btn:hover{background:#FEF2F2;}
+        .main-content{flex:1;margin-left:var(--sidebar-width);display:flex;flex-direction:column;}
+        .topbar{background:var(--bg-card);border-bottom:1px solid var(--sidebar-border);padding:0 24px;height:56px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;}
+        .topbar-title{font-size:16px;font-weight:600;}
+        .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text-main);}
+        .page-body{flex:1;padding:24px;display:flex;align-items:flex-start;}
+        .form-card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);padding:28px;width:100%;max-width:460px;}
+        .form-card-title{font-size:17px;font-weight:700;margin-bottom:4px;}
+        .form-card-sub{font-size:13px;color:var(--text-light);margin-bottom:24px;}
+        .form-group{margin-bottom:16px;}
+        .form-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
+        .form-input{width:100%;padding:9px 12px;border:1px solid var(--sidebar-border);border-radius:8px;font-size:14px;font-family:var(--font);color:var(--text-main);background:#fff;outline:none;transition:border-color .15s;}
+        .form-input:focus{border-color:var(--primary);}
+        .btn-primary{background:var(--primary);color:#fff;border:none;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;width:100%;}
+        .btn-primary:hover{background:var(--primary-dark);}
+        .alert{padding:10px 14px;border-radius:8px;font-size:13.5px;margin-bottom:18px;}
+        .alert-error{background:#FEF2F2;color:#dc2626;border:1px solid #FCA5A5;}
+        .alert-success{background:#D1FAE5;color:#059669;border:1px solid #6EE7B7;}
+        .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;}
+        @media(max-width:768px){.sidebar{transform:translateX(-100%);}
+            .sidebar.open{transform:translateX(0);}.sidebar-overlay.show{display:block;}.main-content{margin-left:0;}.hamburger{display:flex;}.page-body{padding:14px;}}
     </style>
 </head>
-<body class="font-display bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark">
-<div class="flex flex-col min-h-screen">
-
-    <header class="border-b border-primary/20 dark:border-primary/30 bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-sm">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <svg class="h-8 w-8 text-primary" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                    <path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
-                </svg>
-                <h1 class="text-xl font-bold text-foreground-light dark:text-foreground-dark">Sahaayata</h1>
-            </div>
-
-            <div class="hidden md:flex items-center space-x-8">
-                <a class="text-sm font-medium hover:text-primary transition-colors" href="/dashboard">Dashboard</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors" href="/settings">Settings</a>
-            </div>
-
-            <div class="flex items-center space-x-4">
-                <a href="/settings">
-                    <div class="w-10 h-10 rounded-full bg-cover bg-center border border-primary/30"
-                         style='background-image: url("https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=607AFB&color=fff");'>
-                    </div>
-                </a>
-            </div>
+<body>
+<div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
+            <span class="brand-name">Sahaayata</span>
+        </div>
+        <div class="sidebar-user">
+            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
+            <div><p class="user-name"><%= user.getUsername() %></p><p class="user-role">Member</p></div>
+        </div>
+        <nav class="sidebar-nav">
+            <p class="nav-section">Main</p>
+            <a href="/dashboard" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+            <a href="/my-recipes" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>My Recipes</a>
+            <a href="/create-recipe" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Create Recipe</a>
+            <a href="/community" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Community</a>
+            <p class="nav-section" style="margin-top:1.25rem;">Account</p>
+            <a href="/settings" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+            <a href="/change-password" class="nav-link active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Change Password</a>
         </nav>
-    </header>
+        <div class="sidebar-footer">
+            <a href="/logout" class="logout-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Logout</a>
+        </div>
+    </aside>
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div class="w-full max-w-md space-y-8">
-            <div class="bg-card-light dark:bg-card-dark p-8 shadow-xl rounded-xl border border-gray-100 dark:border-gray-800">
-                <div class="text-center">
-                    <h2 class="text-3xl font-bold text-foreground-light dark:text-foreground-dark">Set a New Password</h2>
-                    <p class="mt-2 text-sm text-subtle-light dark:text-subtle-dark">
-                        Your new password must be strong and different from previous ones.
-                    </p>
-                </div>
+    <div class="main-content">
+        <header class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+            <span class="topbar-title">Change Password</span>
+        </header>
+        <div class="page-body">
+            <div class="form-card">
+                <p class="form-card-title">Update Password</p>
+                <p class="form-card-sub">Choose a strong new password to secure your account.</p>
 
-                <% if (error != null) { %>
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
-                    <span class="block sm:inline"><%= error %></span>
-                </div>
-                <% } %>
+                <% if (error != null) { %><div class="alert alert-error"><%= error %></div><% } %>
+                <% if (success != null) { %><div class="alert alert-success"><%= success %></div><% } %>
 
-                <form action="/change-password" class="mt-8 space-y-6" method="POST">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="sr-only" for="new-password">New Password</label>
-                            <input class="w-full px-4 py-3 bg-input-light dark:bg-input-dark border-2 border-transparent focus:ring-2 focus:ring-primary focus:border-primary rounded-lg placeholder-subtle-light dark:placeholder-subtle-dark transition outline-none"
-                                   id="new-password" name="new-password" placeholder="New Password" required type="password"/>
-                        </div>
-                        <div>
-                            <label class="sr-only" for="confirm-password">Confirm New Password</label>
-                            <input class="w-full px-4 py-3 bg-input-light dark:bg-input-dark border-2 border-transparent focus:ring-2 focus:ring-primary focus:border-primary rounded-lg placeholder-subtle-light dark:placeholder-subtle-dark transition outline-none"
-                                   id="confirm-password" name="confirm-password" placeholder="Confirm New Password" required type="password"/>
-                        </div>
+                <form action="/change-password" method="post">
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" class="form-input" name="currentPassword" required autocomplete="current-password"/>
                     </div>
-                    <div>
-                        <button class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 ease-in-out shadow-lg shadow-primary/30" type="submit">
-                            Set New Password
-                        </button>
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" class="form-input" name="newPassword" required minlength="8" autocomplete="new-password"/>
                     </div>
-
-                    <div class="text-center mt-4">
-                        <a href="/settings" class="text-sm text-subtle-light hover:text-primary transition-colors">Cancel</a>
+                    <div class="form-group" style="margin-bottom:22px;">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-input" name="confirmPassword" required minlength="8" autocomplete="new-password"/>
                     </div>
+                    <button type="submit" class="btn-primary">Update Password</button>
                 </form>
             </div>
         </div>
-    </main>
+    </div>
 </div>
+<script>function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}</script>
 </body>
 </html>

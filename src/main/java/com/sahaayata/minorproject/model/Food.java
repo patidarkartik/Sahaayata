@@ -15,23 +15,30 @@ public class Food {
 
     private String category; // Fruit, Vegetable, etc.
 
+    // Changed to Double for null-safety
     @Column(name = "default_serving_weight")
-    private double defaultServingWeight;
+    private Double defaultServingWeight;
 
     @Column(name = "serving_unit")
     private String servingUnit;
 
-    private double calories;
-    private double protein;
-    private double carbs;
-    private double fats;
-    private double fiber;
+    private Double calories;
+    private Double protein;
+    private Double carbs;
+    private Double fats;
+    private Double fiber;
 
+    // Added Missing Column
+    @Column(name = "glycemic_index")
+    private String glycemicIndex;
+
+    // Changed to Integer for null-safety
     @Column(name = "health_rating")
-    private int healthRating; // 1-10
+    private Integer healthRating; // 1-10
 
+    // Changed to Boolean for null-safety
     @Column(name = "is_vegetarian")
-    private boolean vegetarian;
+    private Boolean vegetarian;
 
     @Column(name = "recommended_for")
     private String recommendedFor; // Weight Loss, Muscle Gain
@@ -46,32 +53,35 @@ public class Food {
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
 
-    public double getDefaultServingWeight() { return defaultServingWeight; }
-    public void setDefaultServingWeight(double defaultServingWeight) { this.defaultServingWeight = defaultServingWeight; }
+    public Double getDefaultServingWeight() { return defaultServingWeight; }
+    public void setDefaultServingWeight(Double defaultServingWeight) { this.defaultServingWeight = defaultServingWeight; }
 
     public String getServingUnit() { return servingUnit; }
     public void setServingUnit(String servingUnit) { this.servingUnit = servingUnit; }
 
-    public double getCalories() { return calories; }
-    public void setCalories(double calories) { this.calories = calories; }
+    public Double getCalories() { return calories; }
+    public void setCalories(Double calories) { this.calories = calories; }
 
-    public double getProtein() { return protein; }
-    public void setProtein(double protein) { this.protein = protein; }
+    public Double getProtein() { return protein; }
+    public void setProtein(Double protein) { this.protein = protein; }
 
-    public double getCarbs() { return carbs; }
-    public void setCarbs(double carbs) { this.carbs = carbs; }
+    public Double getCarbs() { return carbs; }
+    public void setCarbs(Double carbs) { this.carbs = carbs; }
 
-    public double getFats() { return fats; }
-    public void setFats(double fats) { this.fats = fats; }
+    public Double getFats() { return fats; }
+    public void setFats(Double fats) { this.fats = fats; }
 
-    public double getFiber() { return fiber; }
-    public void setFiber(double fiber) { this.fiber = fiber; }
+    public Double getFiber() { return fiber; }
+    public void setFiber(Double fiber) { this.fiber = fiber; }
 
-    public int getHealthRating() { return healthRating; }
-    public void setHealthRating(int healthRating) { this.healthRating = healthRating; }
+    public String getGlycemicIndex() { return glycemicIndex; }
+    public void setGlycemicIndex(String glycemicIndex) { this.glycemicIndex = glycemicIndex; }
 
-    public boolean isVegetarian() { return vegetarian; }
-    public void setVegetarian(boolean vegetarian) { this.vegetarian = vegetarian; }
+    public Integer getHealthRating() { return healthRating; }
+    public void setHealthRating(Integer healthRating) { this.healthRating = healthRating; }
+
+    public Boolean getVegetarian() { return vegetarian; }
+    public void setVegetarian(Boolean vegetarian) { this.vegetarian = vegetarian; }
 
     public String getRecommendedFor() { return recommendedFor; }
     public void setRecommendedFor(String recommendedFor) { this.recommendedFor = recommendedFor; }

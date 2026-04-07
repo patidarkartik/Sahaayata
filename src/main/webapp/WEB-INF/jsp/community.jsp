@@ -1,149 +1,175 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page import="com.sahaayata.minorproject.model.userCredential" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
-<%-- 1. SECURITY CHECK --%>
+<%@ page contentType="text/html;charset=UTF-8" language="java"%>
+<%@ page import="com.sahaayata.minorproject.model.userCredential"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%
-    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    response.setHeader("Pragma", "no-cache");
-    response.setDateHeader("Expires", 0);
-
+    response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
     userCredential user = (userCredential) session.getAttribute("loggedInUser");
-    if (user == null) {
-        response.sendRedirect("/login");
-        return;
-    }
+    if (user == null) { response.sendRedirect("/login"); return; }
 %>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Sahaayata - Community</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#607AFB",
-                        "background-light": "#f5f6f8",
-                        "background-dark": "#0f1323",
-                        "text-light": "#112117",
-                        "text-dark": "#f6f8f7",
-                        "text-muted-light": "#586e63",
-                        "text-muted-dark": "#a0b5a9"
-                    },
-                    fontFamily: {display: "Work Sans"},
-                    borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}
-                }
-            }
-        };
-    </script>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Community — Sahaayata</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <style>
-        body { font-family: "Work Sans", sans-serif; }
-        .material-symbols-outlined { font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24; }
+        :root{--primary:#4F6FEB;--primary-light:#EEF1FD;--primary-dark:#3451C7;--sidebar-width:240px;--sidebar-bg:#fff;--sidebar-border:#E8EAED;--text-main:#1a1d23;--text-muted:#6b7280;--text-light:#9ca3af;--bg-page:#F4F6FB;--bg-card:#fff;--nav-hover:#F4F6FB;--nav-active-bg:#EEF1FD;--nav-active-text:#4F6FEB;--radius:10px;--font:'DM Sans',system-ui,sans-serif;}
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:var(--font);background:var(--bg-page);color:var(--text-main);min-height:100vh;}
+        .app-layout{display:flex;min-height:100vh;}
+        .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .25s ease;overflow-y:auto;}
+        .sidebar-brand{display:flex;align-items:center;gap:10px;padding:20px 20px 16px;border-bottom:1px solid var(--sidebar-border);color:var(--primary);}
+        .brand-icon{width:26px;height:26px;}.brand-name{font-size:17px;font-weight:700;color:var(--text-main);letter-spacing:-.3px;}
+        .sidebar-user{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--sidebar-border);}
+        .user-avatar{width:36px;height:36px;border-radius:50%;}.user-name{font-size:13px;font-weight:600;}.user-role{font-size:11px;color:var(--text-light);}
+        .sidebar-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;}
+        .nav-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);padding:8px 8px 6px;}
+        .nav-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;text-decoration:none;color:var(--text-muted);font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
+        .nav-link:hover{background:var(--nav-hover);color:var(--text-main);}.nav-link.active{background:var(--nav-active-bg);color:var(--nav-active-text);font-weight:600;}
+        .nav-icon{width:16px;height:16px;flex-shrink:0;}
+        .sidebar-footer{padding:12px;border-top:1px solid var(--sidebar-border);}
+        .logout-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;border:none;background:none;color:#ef4444;font-size:13.5px;font-weight:500;cursor:pointer;text-decoration:none;transition:background .15s;width:100%;}.logout-btn:hover{background:#FEF2F2;}
+        .main-content{flex:1;margin-left:var(--sidebar-width);display:flex;flex-direction:column;}
+        .topbar{background:var(--bg-card);border-bottom:1px solid var(--sidebar-border);padding:0 24px;height:56px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;}
+        .topbar-title{font-size:16px;font-weight:600;}
+        .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text-main);}
+        .page-body{flex:1;padding:24px;}
+
+        /* community */
+        .community-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;}
+        .recipe-feed{display:flex;flex-direction:column;gap:12px;}
+        .feed-card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);overflow:hidden;}
+        .feed-header{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--sidebar-border);}
+        .feed-avatar{width:36px;height:36px;border-radius:50%;}
+        .feed-user{font-size:13.5px;font-weight:600;}
+        .feed-time{font-size:11.5px;color:var(--text-light);}
+        .feed-body{padding:14px 16px;}
+        .feed-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+        .feed-desc{font-size:13px;color:var(--text-muted);line-height:1.5;}
+        .feed-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+        .tag{background:var(--primary-light);color:var(--primary);font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;}
+        .feed-footer{display:flex;align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--sidebar-border);}
+        .feed-action{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text-light);cursor:pointer;transition:color .15s;}
+        .feed-action:hover{color:var(--primary);}
+
+        .sidebar-right{display:flex;flex-direction:column;gap:12px;align-self:start;position:sticky;top:72px;}
+        .card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);padding:16px;}
+        .card-title{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;}
+        .top-user{display:flex;align-items:center;gap:10px;padding:6px 0;}
+        .top-avatar{width:32px;height:32px;border-radius:50%;}
+        .top-name{font-size:13px;font-weight:500;}
+        .top-count{font-size:11.5px;color:var(--text-light);}
+
+        .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;}
+        @media(max-width:900px){.community-grid{grid-template-columns:1fr;}.sidebar-right{display:none;}}
+        @media(max-width:768px){.sidebar{transform:translateX(-100%);}
+            .sidebar.open{transform:translateX(0);}.sidebar-overlay.show{display:block;}.main-content{margin-left:0;}.hamburger{display:flex;}.page-body{padding:14px;}}
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
-<div class="flex min-h-screen flex-col">
-
-    <header class="border-b border-black/10 dark:border-white/10 sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
-        <div class="container mx-auto flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-            <div class="flex items-center gap-6">
-                <a class="flex items-center gap-2 text-xl font-bold text-text-light dark:text-text-dark" href="/dashboard">
-                    <span class="text-primary">
-                        <svg class="h-8 w-8" fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 16.5V15H8v-2h3v-2.1c0-2.3.94-4.4 2.8-4.4h2.2v2H14.5c-.41 0-1.1.25-1.1 1.1V13h3l-.5 2h-2.5v3.5h-2z"></path>
-                        </svg>
-                    </span>
-                    Sahaayata
-                </a>
-
-                <nav class="hidden items-center gap-6 md:flex">
-                    <a class="text-sm font-medium text-text-muted-light dark:text-text-muted-dark hover:text-primary" href="/dashboard">Dashboard</a>
-                    <a class="text-sm font-medium text-text-muted-light dark:text-text-muted-dark hover:text-primary" href="/my-recipes">My Recipes</a>
-                    <a class="text-sm font-medium text-primary dark:text-primary" href="/community">Community</a>
-                </nav>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <button class="rounded-full p-2 text-text-muted-light dark:text-text-muted-dark hover:bg-primary/20">
-                    <span class="material-symbols-outlined"> search </span>
-                </button>
-                <a href="/settings">
-                    <img alt="User avatar" class="size-10 rounded-full border border-primary/20"
-                         src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=607AFB&color=fff"/>
-                </a>
-            </div>
+<body>
+<div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
+            <span class="brand-name">Sahaayata</span>
         </div>
-    </header>
-
-    <main class="container mx-auto flex-grow px-4 py-8 sm:px-6 lg:px-8">
-        <div class="mb-8 text-center">
-            <h1 class="text-4xl font-bold tracking-tight text-text-light dark:text-text-dark sm:text-5xl">Explore Community Recipes</h1>
-            <p class="mt-4 text-lg text-text-muted-light dark:text-text-muted-dark">Discover delicious and healthy meals shared by our amazing community.</p>
+        <div class="sidebar-user">
+            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
+            <div><p class="user-name"><%= user.getUsername() %></p><p class="user-role">Member</p></div>
         </div>
-
-        <div class="mb-8 flex flex-wrap items-center justify-center gap-4">
-            <div class="relative">
-                <button class="flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium shadow-sm dark:border-white/10 dark:bg-background-dark hover:bg-primary/10 dark:hover:bg-primary/20">
-                    <span>Veg/Non-Veg</span>
-                    <span class="material-symbols-outlined text-base"> expand_more </span>
-                </button>
-            </div>
-            <div class="relative">
-                <button class="flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium shadow-sm dark:border-white/10 dark:bg-background-dark hover:bg-primary/10 dark:hover:bg-primary/20">
-                    <span>Meal Type</span>
-                    <span class="material-symbols-outlined text-base"> expand_more </span>
-                </button>
-            </div>
+        <nav class="sidebar-nav">
+            <p class="nav-section">Main</p>
+            <a href="/dashboard" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+            <a href="/my-recipes" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>My Recipes</a>
+            <a href="/create-recipe" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Create Recipe</a>
+            <a href="/community" class="nav-link active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Community</a>
+            <p class="nav-section" style="margin-top:1.25rem;">Account</p>
+            <a href="/settings" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+            <a href="/change-password" class="nav-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Change Password</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/logout" class="logout-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Logout</a>
         </div>
+    </aside>
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-        <div class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+    <div class="main-content">
+        <header class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+            <span class="topbar-title">Community</span>
+        </header>
+        <div class="page-body">
+            <div class="community-grid">
+                <div class="recipe-feed">
+                    <%-- Dynamic feed rendered from model --%>
+                    <c:choose>
+                        <c:when test="${not empty communityRecipes}">
+                            <c:forEach var="r" items="${communityRecipes}">
+                            <div class="feed-card">
+                                <div class="feed-header">
+                                    <img class="feed-avatar" src="https://ui-avatars.com/api/?name=${r.authorName}&background=4F6FEB&color=fff&size=72" alt="avatar"/>
+                                    <div>
+                                        <p class="feed-user">${r.authorName}</p>
+                                        <p class="feed-time">${r.postedDate}</p>
+                                    </div>
+                                </div>
+                                <div class="feed-body">
+                                    <p class="feed-title">${r.name}</p>
+                                    <p class="feed-desc">${r.description}</p>
+                                    <div class="feed-tags">
+                                        <c:forEach var="tag" items="${r.tags}"><span class="tag">${tag}</span></c:forEach>
+                                    </div>
+                                </div>
+                                <div class="feed-footer">
+                                    <span class="feed-action">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                                        ${r.likes} Likes
+                                    </span>
+                                    <span class="feed-action">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                                        Comment
+                                    </span>
+                                    <span class="feed-action">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                        Share
+                                    </span>
+                                </div>
+                            </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div style="text-align:center;padding:60px 20px;color:var(--text-light);">
+                                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#4F6FEB" stroke-width="1" style="opacity:.25;margin:0 auto 14px;display:block;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                                <p style="font-size:15px;font-weight:500;color:var(--text-muted);margin-bottom:4px;">No community posts yet</p>
+                                <p style="font-size:13px;">Be the first to share a recipe!</p>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
 
-            <c:forEach var="recipe" items="${communityRecipes}">
-                <div class="group cursor-pointer">
-                    <div class="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7 relative">
-                        <img alt="${recipe.title}"
-                             class="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                             src="${recipe.imageUrl}"/>
+                <aside class="sidebar-right">
+                    <div class="card">
+                        <p class="card-title">Top Contributors</p>
+                        <div class="top-user"><img class="top-avatar" src="https://ui-avatars.com/api/?name=Priya+Sharma&background=10b981&color=fff&size=64" alt=""/><div><p class="top-name">Priya Sharma</p><p class="top-count">12 recipes</p></div></div>
+                        <div class="top-user"><img class="top-avatar" src="https://ui-avatars.com/api/?name=Arjun+Mehta&background=f59e0b&color=fff&size=64" alt=""/><div><p class="top-name">Arjun Mehta</p><p class="top-count">9 recipes</p></div></div>
+                        <div class="top-user"><img class="top-avatar" src="https://ui-avatars.com/api/?name=Sneha+Rao&background=ef4444&color=fff&size=64" alt=""/><div><p class="top-name">Sneha Rao</p><p class="top-count">7 recipes</p></div></div>
                     </div>
-                    <h3 class="mt-4 text-base font-semibold text-text-light dark:text-text-dark truncate">${recipe.title}</h3>
-                    <div class="mt-1 flex items-center text-sm text-text-muted-light dark:text-text-muted-dark justify-between">
-                        <div class="flex items-center">
-                            <span class="material-symbols-outlined text-base text-primary">star</span>
-                            <span class="ml-1">4.5</span>
+                    <div class="card">
+                        <p class="card-title">Popular Tags</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                            <span style="background:var(--primary-light);color:var(--primary);font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;">#HighProtein</span>
+                            <span style="background:#FEF3C7;color:#d97706;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;">#Vegan</span>
+                            <span style="background:#D1FAE5;color:#059669;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;">#LowCarb</span>
+                            <span style="background:#FEE2E2;color:#dc2626;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;">#Keto</span>
+                            <span style="background:#EDE9FE;color:#7c3aed;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;">#QuickMeals</span>
                         </div>
-                        <span class="mx-2">•</span>
-                        <span class="truncate">by ${recipe.user.username}</span>
                     </div>
-                </div>
-            </c:forEach>
-
-            <c:if test="${empty communityRecipes}">
-                <div class="col-span-full text-center py-10">
-                    <p class="text-xl text-text-muted-light">No recipes shared yet. Be the first one!</p>
-                    <a href="/create-recipe" class="mt-4 inline-block px-6 py-2 bg-primary text-white rounded-full font-bold hover:bg-blue-600 transition">Share Recipe</a>
-                </div>
-            </c:if>
-
-        </div>
-    </main>
-
-    <footer class="bg-background-light dark:bg-background-dark">
-        <div class="container mx-auto border-t border-black/10 px-4 py-8 dark:border-white/10 sm:px-6 lg:px-8">
-            <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
-                <p class="text-sm text-text-muted-light dark:text-text-muted-dark">© 2024 Sahaayata. All rights reserved.</p>
+                </aside>
             </div>
         </div>
-    </footer>
+    </div>
 </div>
+<script>function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}</script>
 </body>
 </html>
