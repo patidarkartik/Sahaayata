@@ -405,6 +405,41 @@
             }, 2500);
         }
     }
+    async function fetchFilteredSuggestions(meal, filter) {
+        const resultsDropdown = document.getElementById('search-results');
+        try {
+            const response = await fetch('/getSuggestions?meal=' + encodeURIComponent(meal) + '&filter=' + encodeURIComponent(filter));
+            if (response.ok) {
+                const foods = await response.json();
+
+                if (!Array.isArray(foods)) return;
+
+                resultsDropdown.innerHTML = '<div style="padding: 10px 16px; background: var(--primary-light); color: var(--primary); font-size: 11.5px; font-weight: 700; text-transform: uppercase;">SUGGESTIONS FOR ' + decodeURIComponent(filter) + '</div>';
+
+                if(foods.length === 0) {
+                    resultsDropdown.innerHTML += '<div class="search-item"><p class="food-meta">No matching items found. Search manually.</p></div>';
+                } else {
+                    foods.forEach(food => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'search-item';
+                        itemDiv.onclick = () => selectFood(food);
+                        const servingU = food.servingUnit || '1 serving';
+
+                        itemDiv.innerHTML =
+                            '<div>' +
+                            '<p class="food-name">' + food.foodName + '</p>' +
+                            '<p class="food-meta">' + food.calories + ' kcal per ' + servingU + '</p>' +
+                            '</div>' +
+                            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+                        resultsDropdown.appendChild(itemDiv);
+                    });
+                }
+                resultsDropdown.style.display = 'block';
+            }
+        } catch (error) {
+            console.error("Suggestions Error:", error);
+        }
+    }
 
     function confirmPrediction(isCorrect) {
         const predictionText = document.getElementById('prediction-text');

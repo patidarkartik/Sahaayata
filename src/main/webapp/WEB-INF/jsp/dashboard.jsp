@@ -17,7 +17,7 @@
     try { activityMultiplier = Double.parseDouble(user.getActivityLevel()); } catch (Exception e) {}
     int tdee = (int)(bmr * activityMultiplier);
     int consumed = 0;
-    int remaining = tdee - consumed;
+    int remaining = tdee - consumed; // YAHAN VARIABLE DEFINED HAI
     int proteinGoal = (int)(tdee * 0.3 / 4);
     int carbGoal    = (int)(tdee * 0.4 / 4);
     int fatGoal     = (int)(tdee * 0.3 / 9);
@@ -71,7 +71,9 @@
         .stat-value { font-size: 26px; font-weight: 700; color: var(--text-main); line-height: 1; }
         .stat-sub { font-size: 12px; color: var(--text-light); margin-top: 4px; }
         .stat-accent { color: var(--primary); }
+
         .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+
         .ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0; }
         .ring-container { position: relative; width: 160px; height: 160px; }
         .ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -84,16 +86,23 @@
         .macro-val { font-size: 12px; color: var(--text-light); }
         .progress-bar-bg { height: 6px; background: #E8EAED; border-radius: 99px; }
         .progress-bar { height: 6px; background: var(--primary); border-radius: 99px; }
+
         .filter-container { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
         .filter-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--sidebar-border); background: var(--bg-page); color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .filter-btn:hover { background: #E8EAED; }
         .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-        .meal-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; background: var(--bg-page); margin-bottom: 8px; transition: transform 0.2s; }
+
+        .meal-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; background: var(--bg-page); margin-bottom: 8px; transition: transform 0.2s; border: 1px solid transparent; }
         .meal-item:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
         .meal-name { font-size: 13.5px; font-weight: 600; color: var(--text-main); }
-        .meal-cal { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+        .meal-cal { font-size: 12px; color: var(--text-light); margin-top: 4px; line-height: 1.4; }
+
         .btn-add { font-size: 12.5px; font-weight: 600; color: #fff; background: var(--primary); border: none; cursor: pointer; padding: 6px 12px; border-radius: 6px; transition: 0.15s; }
         .btn-add:hover { background: var(--primary-dark); }
+
+        .btn-generate-full { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #fff; background: var(--primary); border: none; cursor: pointer; padding: 14px; border-radius: 8px; transition: 0.2s; margin-top: 16px; }
+        .btn-generate-full:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 99; }
         @media (max-width: 900px) { .stats-row { grid-template-columns: 1fr 1fr; } .main-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .sidebar-overlay.show { display: block; } .main-content { margin-left: 0; } .hamburger { display: flex; } .page-body { padding: 14px; } .stats-row { grid-template-columns: 1fr 1fr; } }
@@ -105,13 +114,20 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
+            <svg class="brand-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/>
+            </svg>
             <span class="brand-name">Sahaayata</span>
         </div>
+
         <div class="sidebar-user">
             <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
-            <div><p class="user-name"><%= user.getUsername() %></p><p class="user-role">Member</p></div>
+            <div>
+                <p class="user-name"><%= user.getUsername() %></p>
+                <p class="user-role">Member</p>
+            </div>
         </div>
+
         <nav class="sidebar-nav">
             <p class="nav-section">Main</p>
             <a href="/dashboard" class="nav-link active">
@@ -159,6 +175,7 @@
         </header>
 
         <div class="page-body">
+
             <div class="stats-row">
                 <div class="stat-card">
                     <p class="stat-label">Daily Target</p>
@@ -178,6 +195,7 @@
             </div>
 
             <div class="main-grid">
+
                 <div style="display:flex;flex-direction:column;gap:14px;">
                     <div class="card">
                         <p class="card-title">Calorie Progress</p>
@@ -224,11 +242,11 @@
 
                 <div class="card" style="align-self:start;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-                        <p class="card-title" style="margin:0;">Today's Meals</p>
-                        <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 12px; font-weight: 600;">For <%= remaining %> kcal</span>
+                        <p class="card-title" style="margin:0;">TODAY'S MEALS</p>
+                        <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: 600;">For <%= remaining %> kcal</span>
                     </div>
 
-                    <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 10px;">Select a goal to get filtered suggestions:</p>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Select a goal to get filtered suggestions:</p>
 
                     <div class="filter-container">
                         <button class="filter-btn active" onclick="setFilter('High Protein', event)">High Protein</button>
@@ -240,34 +258,27 @@
 
                     <div style="margin-top: 16px;">
                         <div class="meal-item">
-                            <div>
-                                <p class="meal-name">Breakfast</p>
-                                <p class="meal-cal">0 kcal logged</p>
-                            </div>
+                            <div><p class="meal-name">Breakfast</p><p class="meal-cal">0 kcal logged</p></div>
                             <button class="btn-add" id="btn-add-breakfast" onclick="window.location.href='/log-meal?meal=Breakfast&filter=High%20Protein'">+ Add</button>
                         </div>
                         <div class="meal-item">
-                            <div>
-                                <p class="meal-name">Lunch</p>
-                                <p class="meal-cal">0 kcal logged</p>
-                            </div>
+                            <div><p class="meal-name">Lunch</p><p class="meal-cal">0 kcal logged</p></div>
                             <button class="btn-add" id="btn-add-lunch" onclick="window.location.href='/log-meal?meal=Lunch&filter=High%20Protein'">+ Add</button>
                         </div>
                         <div class="meal-item">
-                            <div>
-                                <p class="meal-name">Dinner</p>
-                                <p class="meal-cal">0 kcal logged</p>
-                            </div>
+                            <div><p class="meal-name">Dinner</p><p class="meal-cal">0 kcal logged</p></div>
                             <button class="btn-add" id="btn-add-dinner" onclick="window.location.href='/log-meal?meal=Dinner&filter=High%20Protein'">+ Add</button>
                         </div>
                         <div class="meal-item">
-                            <div>
-                                <p class="meal-name">Snacks</p>
-                                <p class="meal-cal">0 kcal logged</p>
-                            </div>
+                            <div><p class="meal-name">Snacks</p><p class="meal-cal">0 kcal logged</p></div>
                             <button class="btn-add" id="btn-add-snacks" onclick="window.location.href='/log-meal?meal=Snacks&filter=High%20Protein'">+ Add</button>
                         </div>
                     </div>
+
+                    <button class="btn-generate-full" onclick="goToGeneratePage()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #fff; background: var(--primary); border: none; cursor: pointer; padding: 14px; border-radius: 8px; transition: 0.2s; margin-top: 16px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        Suggest Full Meal Plan
+                    </button>
                 </div>
             </div>
         </div>
@@ -275,24 +286,17 @@
 </div>
 
 <script>
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('overlay').classList.toggle('show');
-    }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
 
     const ring = document.getElementById('calorie-ring');
-    const circumference = 2 * Math.PI * 68;
     const consumed = <%= consumed %>, target = <%= tdee %>;
     const percent = Math.min(consumed / target, 1);
-    ring.style.strokeDasharray = circumference;
-    ring.style.strokeDashoffset = circumference - percent * circumference;
+    ring.style.strokeDashoffset = 427.26 - percent * 427.26;
 
     let currentFilter = 'High Protein';
 
     function setFilter(filterType, event) {
-        document.querySelectorAll('.filter-btn').forEach(function(btn) {
-            btn.classList.remove('active');
-        });
+        document.querySelectorAll('.filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
         event.target.classList.add('active');
         currentFilter = filterType;
 
@@ -301,6 +305,11 @@
         document.getElementById('btn-add-lunch').onclick = function() { window.location.href = '/log-meal?meal=Lunch&filter=' + encodedFilter; };
         document.getElementById('btn-add-dinner').onclick = function() { window.location.href = '/log-meal?meal=Dinner&filter=' + encodedFilter; };
         document.getElementById('btn-add-snacks').onclick = function() { window.location.href = '/log-meal?meal=Snacks&filter=' + encodedFilter; };
+    }
+
+    function goToGeneratePage() {
+        const remainingCals = <%= remaining %>;
+        window.location.href = '/generate-plan?filter=' + encodeURIComponent(currentFilter) + '&target=' + remainingCals;
     }
 </script>
 </body>

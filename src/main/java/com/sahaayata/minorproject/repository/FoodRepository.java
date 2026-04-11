@@ -11,10 +11,9 @@ import java.util.List;
 @Repository
 public interface FoodRepository extends JpaRepository<Food, Long> {
 
-    // Normal search bar ke liye
     List<Food> findByFoodNameContainingIgnoreCase(String name);
 
-    // Naya SMART FILTER query (Jo Meal Type aur Smart Filter dono check karega)
-    @Query("SELECT f FROM Food f WHERE f.smartFilter = :filter AND f.category IN :categories")
-    List<Food> findSuggestions(@Param("filter") String filter, @Param("categories") List<String> categories);
+    // Ye recommended_for column check karega (as per food1.sql)
+    @Query(value = "SELECT * FROM foods WHERE category IN (:categories) AND recommended_for IN (:recommended)", nativeQuery = true)
+    List<Food> findSuggestions(@Param("categories") List<String> categories, @Param("recommended") List<String> recommended);
 }
