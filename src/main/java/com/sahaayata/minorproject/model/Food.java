@@ -13,9 +13,8 @@ public class Food {
     @Column(name = "food_name")
     private String foodName;
 
-    private String category; // Fruit, Vegetable, etc.
+    private String category;
 
-    // Changed to Double for null-safety
     @Column(name = "default_serving_weight")
     private Double defaultServingWeight;
 
@@ -28,20 +27,21 @@ public class Food {
     private Double fats;
     private Double fiber;
 
-    // Added Missing Column
     @Column(name = "glycemic_index")
     private String glycemicIndex;
 
-    // Changed to Integer for null-safety
     @Column(name = "health_rating")
-    private Integer healthRating; // 1-10
+    private Integer healthRating;
 
-    // Changed to Boolean for null-safety
     @Column(name = "is_vegetarian")
-    private Boolean vegetarian;
+    private Boolean isVegetarian;
 
     @Column(name = "recommended_for")
-    private String recommendedFor; // Weight Loss, Muscle Gain
+    private String recommendedFor;
+
+    // ---- NAYA COLUMN FILTERS KE LIYE ----
+    @Column(name = "smart_filter")
+    private String smartFilter;
 
     // --- Getters and Setters ---
     public Long getId() { return id; }
@@ -80,9 +80,12 @@ public class Food {
     public Integer getHealthRating() { return healthRating; }
     public void setHealthRating(Integer healthRating) { this.healthRating = healthRating; }
 
-    public Boolean getVegetarian() { return vegetarian; }
-    public void setVegetarian(Boolean vegetarian) { this.vegetarian = vegetarian; }
+    public Boolean getVegetarian() { return isVegetarian; }
+    public void setVegetarian(Boolean vegetarian) { isVegetarian = vegetarian; }
 
     public String getRecommendedFor() { return recommendedFor; }
     public void setRecommendedFor(String recommendedFor) { this.recommendedFor = recommendedFor; }
+
+    public String getSmartFilter() { return smartFilter; }
+    public void setSmartFilter(String smartFilter) { this.smartFilter = smartFilter; }
 }

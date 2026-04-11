@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="com.sahaayata.minorproject.model.userCredential" %>
 
-<%-- SECURITY & LOGIC CHECK --%>
 <%
     response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     response.setHeader("Pragma", "no-cache");
@@ -13,9 +12,8 @@
         return;
     }
 
-    // Safely fetch the 'meal' parameter from the URL
     String mealParam = request.getParameter("meal");
-    String currentMeal = (mealParam != null && !mealParam.trim().isEmpty()) ? mealParam : "Breakfast";
+    String currentMeal = (mealParam != null && !mealParam.trim().isEmpty()) ? mealParam : "Custom Meal";
 %>
 
 <!DOCTYPE html>
@@ -37,8 +35,6 @@
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: var(--font); background: var(--bg-page); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
-
-        /* Layout & Sidebar */
         .app-layout { display: flex; min-height: 100vh; }
         .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform .25s ease; overflow-y: auto; }
         .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 20px 20px 16px; border-bottom: 1px solid var(--sidebar-border); color: var(--primary); }
@@ -57,21 +53,16 @@
         .sidebar-footer { padding: 12px; border-top: 1px solid var(--sidebar-border); }
         .logout-btn { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px; border: none; background: none; color: #ef4444; font-size: 13.5px; font-weight: 500; cursor: pointer; text-decoration: none; transition: background .15s; width: 100%; }
         .logout-btn:hover { background: #FEF2F2; }
-
-        /* Main Content */
         .main-content { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; }
         .topbar { background: var(--bg-card); border-bottom: 1px solid var(--sidebar-border); padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 50; }
         .topbar-title { font-size: 16px; font-weight: 600; }
         .hamburger { display: none; background: none; border: none; cursor: pointer; color: var(--text-main); }
         .page-body { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 24px; max-width: 1200px; margin: 0 auto; width: 100%; }
-
-        /* General Card & Components */
         .card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
         .input-group { position: relative; width: 100%; }
         .form-input { width: 100%; padding: 11px 16px; border: 1px solid var(--sidebar-border); border-radius: 8px; font-size: 14.5px; font-family: var(--font); color: var(--text-main); background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
         .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-
         .btn { border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s, transform .1s; font-family: var(--font); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); color: #fff; }
@@ -80,52 +71,32 @@
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-secondary { background: var(--bg-page); color: var(--text-muted); border: 1px solid var(--sidebar-border); }
         .btn-secondary:hover { background: #E8EAED; color: var(--text-main); }
-
-        /* Search Section */
         .search-results { display: none; position: absolute; width: 100%; z-index: 10; margin-top: 4px; max-height: 300px; overflow-y: auto; border: 1px solid var(--sidebar-border); border-radius: 8px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .search-item { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sidebar-border); cursor: pointer; transition: background .15s; }
         .search-item:last-child { border-bottom: none; }
         .search-item:hover { background: var(--bg-page); }
         .food-name { font-weight: 600; font-size: 14px; }
         .food-meta { color: var(--text-light); font-size: 12px; margin-top: 2px; }
-
-        /* Food Details and Logging */
         #food-details { display: none; margin-top: 24px; }
         .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px; }
         .stat-card { background: var(--bg-page); border: 1px solid var(--sidebar-border); border-radius: 8px; padding: 16px; text-align: center; }
         .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
         .stat-value { font-size: 24px; font-weight: 700; color: var(--primary); margin-top: 4px; }
         .serving-control { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
-
-        /* Image Logging Section */
         #prediction-result { display: none; margin-top: 20px; text-align: center; border-top: 1px solid var(--sidebar-border); padding-top: 20px; }
         #prediction-text { font-size: 16px; font-weight: 600; color: var(--text-main); }
         .confirm-actions { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
-
-        /* Popup / Modal CSS */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
         .modal-overlay.show { display: flex; opacity: 1; }
         .modal-card { background: var(--bg-card); padding: 32px; border-radius: var(--radius); width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform: translateY(20px); transition: transform 0.2s ease; }
         .modal-overlay.show .modal-card { transform: translateY(0); }
-
         .score-circle { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; margin: 0 auto 20px; color: #fff; }
         .score-high { background: var(--success); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
         .score-mid { background: var(--warning); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
         .score-low { background: var(--danger); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
-
         .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
         .modal-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
-
-        @media(max-width:768px){
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay.show { display: block; }
-            .main-content { margin-left: 0; }
-            .hamburger { display: flex; }
-            .page-body { padding: 16px; }
-            .serving-control { flex-direction: column; align-items: stretch; }
-        }
-
+        @media(max-width:768px){ .sidebar{transform:translateX(-100%);} .sidebar.open{transform:translateX(0);} .sidebar-overlay.show{display:block;} .main-content{margin-left:0;} .hamburger{display:flex;} .page-body{padding:16px;} .serving-control{flex-direction:column;align-items:stretch;} }
     </style>
 </head>
 <body>
@@ -143,26 +114,21 @@
         <nav class="sidebar-nav">
             <p class="nav-section">Main</p>
             <a href="/dashboard" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-                Dashboard
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Dashboard
             </a>
             <a href="/log-meal" class="nav-link active">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
-                Log Meal
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Log Meal
             </a>
             <a href="/my-recipes" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-                My Recipes
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>My Recipes
             </a>
             <a href="/community" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-                Community
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Community
             </a>
         </nav>
         <div class="sidebar-footer">
             <a href="/logout" class="logout-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-                Logout
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Logout
             </a>
         </div>
     </aside>
@@ -186,8 +152,7 @@
                     <input type="hidden" name="mealType" value="<%= currentMeal %>" id="hidden-meal-type">
 
                     <div class="input-group">
-                        <input type="text" id="food-search" class="form-input" placeholder="Search for food (e.g., Apple, Chicken Breast)..." oninput="showSearchResults()" onkeydown="return event.key != 'Enter';" autocomplete="off"/>
-
+                        <input type="text" id="food-search" class="form-input" placeholder="Search for food (e.g., Apple, Roti, Chicken)..." oninput="showSearchResults()" onkeydown="return event.key != 'Enter';" autocomplete="off"/>
                         <div id="search-results" class="search-results"></div>
                     </div>
 
@@ -200,13 +165,18 @@
                         </div>
 
                         <div class="serving-control">
-                            <label for="serving-size" class="form-label" style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Serving Size (g/ml)</label>
-                            <input type="number" name="servingSize" id="serving-size" class="form-input" value="100" style="width: 120px;" oninput="updateNutrition()" required>
+                            <label for="serving-qty" class="form-label" style="font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 0;">Number of Servings</label>
 
-                            <div style="flex: 1;"></div> <button type="button" class="btn btn-secondary" onclick="showQualityScore()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
-                            Check Quality
-                        </button>
+                            <input type="number" name="servingQty" id="serving-qty" class="form-input" value="1" step="0.5" style="width: 100px;" oninput="updateNutrition()" required>
+
+                            <span id="serving-unit-display" style="font-size: 13.5px; font-weight: 500; color: var(--text-main); margin-left: 8px;"></span>
+
+                            <div style="flex: 1;"></div>
+
+                            <button type="button" class="btn btn-secondary" onclick="showQualityScore()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
+                                Check Quality
+                            </button>
                             <button type="submit" class="btn btn-primary" id="btn-add-log">Add to Log</button>
                         </div>
                     </div>
@@ -221,7 +191,6 @@
                         Choose Food Image
                     </button>
                     <input type="file" id="image-upload" style="display: none;" accept="image/*" onchange="predictImage(event)">
-
                     <img id="uploaded-image-preview" src="#" alt="Preview" style="display: none; max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--sidebar-border); margin-top: 10px;"/>
                 </div>
 
@@ -241,13 +210,8 @@
 <div id="quality-modal" class="modal-overlay">
     <div class="modal-card">
         <p class="modal-title">Food Quality Score</p>
-
-        <div id="score-circle" class="score-circle">
-            <span id="score-value">0</span>
-        </div>
-
+        <div id="score-circle" class="score-circle"><span id="score-value">0</span></div>
         <p id="score-feedback" class="modal-desc">Loading nutritional data...</p>
-
         <button class="btn btn-secondary" style="width: 100%;" onclick="closeQualityScore()">Got it</button>
     </div>
 </div>
@@ -258,8 +222,57 @@
         document.getElementById('overlay').classList.toggle('show');
     }
 
-    // --- SEARCH & REALTIME UPDATE LOGIC ---
     let currentFood = null;
+
+    // --- AUTO-FETCH SUGGESTIONS IF COMING FROM DASHBOARD FILTER ---
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const filterStr = urlParams.get('filter');
+        const mealStr = urlParams.get('meal');
+
+        if (filterStr && mealStr) {
+            fetchFilteredSuggestions(mealStr, filterStr);
+        }
+    };
+
+    async function fetchFilteredSuggestions(meal, filter) {
+        const resultsDropdown = document.getElementById('search-results');
+
+        try {
+            // Nayi Smart API Call (Meal + Filter dono bhej raha hai)
+            const response = await fetch('/getSuggestions?meal=' + encodeURIComponent(meal) + '&filter=' + encodeURIComponent(filter));
+
+            if (response.ok) {
+                const foods = await response.json();
+
+                resultsDropdown.innerHTML = '<div style="padding: 10px 16px; background: var(--primary-light); color: var(--primary); font-size: 11.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">SUGGESTIONS FOR ' + decodeURIComponent(filter) + ' (' + meal + ')</div>';
+
+                if(foods.length === 0) {
+                    resultsDropdown.innerHTML += '<div class="search-item"><p class="food-meta">No perfect matches found. Try normal search.</p></div>';
+                } else {
+                    foods.forEach(food => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'search-item';
+                        itemDiv.onclick = () => selectFood(food);
+
+                        const servingU = food.servingUnit || '100g';
+
+                        itemDiv.innerHTML =
+                            '<div>' +
+                            '<p class="food-name">' + food.foodName + '</p>' +
+                            '<p class="food-meta">' + food.calories + ' kcal per ' + servingU + '</p>' +
+                            '</div>' +
+                            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+
+                        resultsDropdown.appendChild(itemDiv);
+                    });
+                }
+                resultsDropdown.style.display = 'block';
+            }
+        } catch (error) {
+            console.error("Error fetching suggestions:", error);
+        }
+    }
 
     async function showSearchResults() {
         const query = document.getElementById('food-search').value.trim();
@@ -267,17 +280,9 @@
 
         if (query.length > 2) {
             try {
-                console.log("Frontend: Searching for ->", query);
-
-                // NO Template Literals used here to avoid JSP EL crash
                 const response = await fetch('/searchFood?q=' + encodeURIComponent(query));
-
-                console.log("Backend Response Status ->", response.status);
-
                 if (response.ok) {
                     const foods = await response.json();
-                    console.log("Data Received from DB ->", foods);
-
                     resultsDropdown.innerHTML = '';
 
                     if(foods.length === 0) {
@@ -288,23 +293,18 @@
                             itemDiv.className = 'search-item';
                             itemDiv.onclick = () => selectFood(food);
 
-                            const servingU = food.servingUnit || 'per 100g';
-                            const fCat = food.category || 'Food';
+                            const servingU = food.servingUnit || '100g';
 
                             itemDiv.innerHTML =
                                 '<div>' +
-                                '<p class="food-name">' + food.foodName + ' (' + servingU + ')</p>' +
-                                '<p class="food-meta">' + food.calories + ' kcal per 100g | ' + fCat + '</p>' +
+                                '<p class="food-name">' + food.foodName + '</p>' +
+                                '<p class="food-meta">' + food.calories + ' kcal per ' + servingU + '</p>' +
                                 '</div>' +
                                 '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
 
                             resultsDropdown.appendChild(itemDiv);
                         });
                     }
-                    resultsDropdown.style.display = 'block';
-                } else {
-                    console.error("Backend Error: Status code", response.status);
-                    resultsDropdown.innerHTML = '<div class="search-item"><p class="food-meta" style="color: red;">Error fetching data. Check Console.</p></div>';
                     resultsDropdown.style.display = 'block';
                 }
             } catch (error) {
@@ -317,17 +317,16 @@
 
     function selectFood(foodObj) {
         currentFood = foodObj;
-
-        // Populate UI
         document.getElementById('food-search').value = foodObj.foodName;
         document.getElementById('search-results').style.display = 'none';
         document.getElementById('food-details').style.display = 'block';
-
-        // Populate hidden fields for Database Save
         document.getElementById('hidden-food-id').value = foodObj.id;
 
-        // Auto-fill serving size
-        document.getElementById('serving-size').value = foodObj.defaultServingWeight || 100;
+        document.getElementById('serving-qty').value = 1;
+
+        const sUnit = foodObj.servingUnit || '100g';
+        const sWeight = foodObj.defaultServingWeight ? ' (' + foodObj.defaultServingWeight + 'g)' : '';
+        document.getElementById('serving-unit-display').innerText = 'x ' + sUnit + sWeight;
 
         updateNutrition();
     }
@@ -335,36 +334,30 @@
     function updateNutrition() {
         if (!currentFood) return;
 
-        const servingSize = parseFloat(document.getElementById('serving-size').value) || 100;
-        const ratio = servingSize / 100;
+        const qty = parseFloat(document.getElementById('serving-qty').value) || 1;
 
-        // Using standard concatenation to avoid JSP EL error
-        document.getElementById('val-cal').innerText = Math.round(currentFood.calories * ratio) + " kcal";
-        document.getElementById('val-prot').innerText = (currentFood.protein * ratio).toFixed(1) + " g";
-        document.getElementById('val-carbs').innerText = (currentFood.carbs * ratio).toFixed(1) + " g";
-        document.getElementById('val-fats').innerText = (currentFood.fats * ratio).toFixed(1) + " g";
+        document.getElementById('val-cal').innerText = Math.round(currentFood.calories * qty) + " kcal";
+        document.getElementById('val-prot').innerText = (currentFood.protein * qty).toFixed(1) + " g";
+        document.getElementById('val-carbs').innerText = (currentFood.carbs * qty).toFixed(1) + " g";
+        document.getElementById('val-fats').innerText = (currentFood.fats * qty).toFixed(1) + " g";
     }
 
-    // --- FOOD QUALITY SCORE LOGIC ---
     function showQualityScore() {
         if (!currentFood) return;
-
         let score = (currentFood.healthRating || 5) * 10;
-
         const circle = document.getElementById('score-circle');
         const feedback = document.getElementById('score-feedback');
 
         circle.className = 'score-circle';
-
-        const recFor = currentFood.recommendedFor || 'general health';
-        const glyInd = currentFood.glycemicIndex || 'Low';
+        const recFor = currentFood.recommendedFor || 'General Health';
+        const glyInd = currentFood.glycemicIndex || 'Medium';
 
         if (score >= 80) {
             circle.classList.add('score-high');
-            feedback.innerHTML = '<strong>Excellent choice!</strong><br/> Ideal for ' + recFor + '. It is a ' + glyInd + ' Glycemic Index food.';
+            feedback.innerHTML = '<strong>Excellent choice!</strong><br/> Ideal for ' + recFor + '. It has a ' + glyInd + ' Glycemic Index.';
         } else if (score >= 50) {
             circle.classList.add('score-mid');
-            feedback.innerHTML = '<strong>Decent option.</strong><br/> Good in moderation. It is a ' + glyInd + ' Glycemic Index food.';
+            feedback.innerHTML = '<strong>Decent option.</strong><br/> Good in moderation. It has a ' + glyInd + ' Glycemic Index.';
         } else {
             circle.classList.add('score-low');
             feedback.innerHTML = '<strong>Low Quality.</strong><br/> Consider healthier alternatives. This is high in empty calories or fats.';
@@ -374,11 +367,8 @@
         document.getElementById('quality-modal').classList.add('show');
     }
 
-    function closeQualityScore() {
-        document.getElementById('quality-modal').classList.remove('show');
-    }
+    function closeQualityScore() { document.getElementById('quality-modal').classList.remove('show'); }
 
-    // Close search dropdown if clicked outside
     document.addEventListener('click', function(event) {
         const searchBox = document.querySelector('.input-group');
         if (!searchBox.contains(event.target)) {
@@ -386,7 +376,6 @@
         }
     });
 
-    // --- IMAGE LOGGING (Future AI Scope Mockup) ---
     function predictImage(event) {
         const input = event.target;
         if (input.files && input.files[0]) {
@@ -409,7 +398,7 @@
             btnNo.style.display = 'none';
 
             setTimeout(() => {
-                const predictedFood = "Chicken Breast";
+                const predictedFood = "Apple";
                 predictionText.innerHTML = 'Model predicts: <strong>' + predictedFood + '</strong>. Is this correct?';
                 btnYes.style.display = 'inline-block';
                 btnNo.style.display = 'inline-block';
@@ -424,7 +413,7 @@
 
         if (isCorrect) {
             predictionText.innerHTML = '<span style="color: var(--success);">Great! Finding nutritional data...</span>';
-            document.getElementById('food-search').value = "Chicken Breast";
+            document.getElementById('food-search').value = "Apple";
             showSearchResults();
         } else {
             predictionText.innerHTML = '<span style="color: var(--danger);">Sorry about that. Please search for the food manually above.</span>';
@@ -432,7 +421,6 @@
         btnYes.style.display = 'none';
         btnNo.style.display = 'none';
     }
-
 </script>
 </body>
 </html>
