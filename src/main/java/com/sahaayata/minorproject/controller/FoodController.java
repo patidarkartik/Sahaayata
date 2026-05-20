@@ -1,8 +1,10 @@
 package com.sahaayata.minorproject.controller;
 
+import com.sahaayata.minorproject.model.DailyLog;
 import com.sahaayata.minorproject.model.Food;
 import com.sahaayata.minorproject.model.Recipe;
 import com.sahaayata.minorproject.model.userCredential;
+import com.sahaayata.minorproject.repository.DailyLogRepository;
 import com.sahaayata.minorproject.repository.FoodRepository;
 import com.sahaayata.minorproject.repository.RecipeRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -24,6 +27,9 @@ public class FoodController {
 
     @Autowired
     private RecipeRepository recipeRepository;
+
+    @Autowired
+    private DailyLogRepository dailyLogRepository;
 
     @GetMapping("/recipes")
     public String showRecipesPage(HttpSession session, Model model) {
@@ -76,11 +82,6 @@ public class FoodController {
         return "log-meal";
     }
 
-    @PostMapping("/save-daily-log")
-    public String saveDailyLog(HttpServletRequest request, HttpSession session) {
-        if (session.getAttribute("loggedInUser") == null) return "redirect:/login";
-        return "redirect:/dashboard";
-    }
 
     // --- YE ROUTE FIX KARTA HAI 404 ERROR KO ---
     @GetMapping("/generate-plan")
@@ -90,4 +91,32 @@ public class FoodController {
         }
         return "generate-plan";
     }
+
+    // Log meal
+    @PostMapping("/save-daily-log")
+    public String saveDailyLog(
+            @RequestParam("foodId") Long foodId,
+            @RequestParam("servingQty") Double quantity, // <-- Aapke form ka "servingQty" yahan aayega
+            @RequestParam("mealType") String mealType,
+            HttpSession session) {
+
+        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        if (user == null) return "redirect:/login";
+
+        Food food = foodRepository.findById(foodId).orElse(null);
+        if (food != null) {
+            DailyLog log = new DailyLog();
+            log.setUser(user);
+            log.setFood(food);
+            log.setQuantity(quantity); // Database mein quantity hi save hoga
+            log.setMealType(mealType);
+            log.setLogDate(java.time.LocalDate.now());
+
+            dailyLogRepository.save(log);
+        }
+
+        return "redirect:/dashboard";
+    }
+
+
 }

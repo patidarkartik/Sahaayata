@@ -7,21 +7,46 @@
     response.setDateHeader("Expires", 0);
 
     userCredential user = (userCredential) session.getAttribute("loggedInUser");
-    if (user == null) { response.sendRedirect("/login"); return; }
+    if (user == null) {
+        response.sendRedirect("/login");
+        return;
+    }
 
     double bmr = "Male".equalsIgnoreCase(user.getGender())
             ? (10 * user.getWeight()) + (6.25 * user.getHeight()) - (5 * user.getAge()) + 5
             : (10 * user.getWeight()) + (6.25 * user.getHeight()) - (5 * user.getAge()) - 161;
 
     double activityMultiplier = 1.2;
-    try { activityMultiplier = Double.parseDouble(user.getActivityLevel()); } catch (Exception e) {}
-    int tdee = (int)(bmr * activityMultiplier);
-    int consumed = 0;
-    int remaining = tdee - consumed; // YAHAN VARIABLE DEFINED HAI
-    int proteinGoal = (int)(tdee * 0.3 / 4);
-    int carbGoal    = (int)(tdee * 0.4 / 4);
-    int fatGoal     = (int)(tdee * 0.3 / 9);
+    try {
+        activityMultiplier = Double.parseDouble(user.getActivityLevel());
+    } catch (Exception e) {
+    }
+
+    int tdee = (int) (bmr * activityMultiplier);
+
+    // YAHAN HUMNE DYNAMIC DATA FETCH KIYA HAI
+    Integer consumedAttr = (Integer) request.getAttribute("consumedCalories");
+    int consumed = (consumedAttr != null) ? consumedAttr : 0;
+
+    // --- NAYE MACRO VARIABLES YAHAN ADD KIYE HAIN ---
+    Integer protAttr = (Integer) request.getAttribute("consumedProtein");
+    int consumedProtein = (protAttr != null) ? protAttr : 0;
+
+    Integer carbAttr = (Integer) request.getAttribute("consumedCarbs");
+    int consumedCarbs = (carbAttr != null) ? carbAttr : 0;
+
+    Integer fatAttr = (Integer) request.getAttribute("consumedFats");
+    int consumedFats = (fatAttr != null) ? fatAttr : 0;
+    // ------------------------------------------------
+
+    int remaining = tdee - consumed; // Ab ye dynamic h
+
+    // TARGET GOALS
+    int proteinGoal = (int) (tdee * 0.3 / 4);
+    int carbGoal = (int) (tdee * 0.4 / 4);
+    int fatGoal = (int) (tdee * 0.3 / 9);
 %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,82 +56,500 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <style>
         :root {
-            --primary: #4F6FEB; --primary-light: #EEF1FD; --primary-dark: #3451C7;
-            --sidebar-width: 240px; --sidebar-bg: #fff; --sidebar-border: #E8EAED;
-            --text-main: #1a1d23; --text-muted: #6b7280; --text-light: #9ca3af;
-            --bg-page: #F4F6FB; --bg-card: #fff;
-            --nav-hover: #F4F6FB; --nav-active-bg: #EEF1FD; --nav-active-text: #4F6FEB;
-            --radius: 10px; --font: 'DM Sans', system-ui, sans-serif;
+            --primary: #4F6FEB;
+            --primary-light: #EEF1FD;
+            --primary-dark: #3451C7;
+            --sidebar-width: 240px;
+            --sidebar-bg: #fff;
+            --sidebar-border: #E8EAED;
+            --text-main: #1a1d23;
+            --text-muted: #6b7280;
+            --text-light: #9ca3af;
+            --bg-page: #F4F6FB;
+            --bg-card: #fff;
+            --nav-hover: #F4F6FB;
+            --nav-active-bg: #EEF1FD;
+            --nav-active-text: #4F6FEB;
+            --radius: 10px;
+            --font: 'DM Sans', system-ui, sans-serif;
         }
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font); background: var(--bg-page); color: var(--text-main); min-height: 100vh; }
-        .app-layout { display: flex; min-height: 100vh; }
-        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform .25s ease; overflow-y: auto; }
-        .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 20px 20px 16px; border-bottom: 1px solid var(--sidebar-border); color: var(--primary); }
-        .brand-icon { width: 26px; height: 26px; }
-        .brand-name { font-size: 17px; font-weight: 700; color: var(--text-main); letter-spacing: -.3px; }
-        .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--sidebar-border); }
-        .user-avatar { width: 36px; height: 36px; border-radius: 50%; }
-        .user-name { font-size: 13px; font-weight: 600; }
-        .user-role { font-size: 11px; color: var(--text-light); }
-        .sidebar-nav { flex: 1; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px; }
-        .nav-section { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-light); padding: 8px 8px 6px; }
-        .nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; text-decoration: none; color: var(--text-muted); font-size: 13.5px; font-weight: 500; transition: background .15s, color .15s; }
-        .nav-link:hover { background: var(--nav-hover); color: var(--text-main); }
-        .nav-link.active { background: var(--nav-active-bg); color: var(--nav-active-text); font-weight: 600; }
-        .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
-        .sidebar-footer { padding: 12px; border-top: 1px solid var(--sidebar-border); }
-        .logout-btn { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px; border: none; background: none; color: #ef4444; font-size: 13.5px; font-weight: 500; cursor: pointer; text-decoration: none; transition: background .15s; width: 100%; }
-        .logout-btn:hover { background: #FEF2F2; }
-        .main-content { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: var(--bg-card); border-bottom: 1px solid var(--sidebar-border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-        .topbar-title { font-size: 16px; font-weight: 600; }
-        .hamburger { display: none; background: none; border: none; cursor: pointer; color: var(--text-main); }
-        .page-body { flex: 1; padding: 24px; }
-        .card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); padding: 20px; }
-        .card-title { font-size: 13.5px; font-weight: 600; margin-bottom: 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
-        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
-        .stat-card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); padding: 16px 20px; }
-        .stat-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-light); margin-bottom: 6px; }
-        .stat-value { font-size: 26px; font-weight: 700; color: var(--text-main); line-height: 1; }
-        .stat-sub { font-size: 12px; color: var(--text-light); margin-top: 4px; }
-        .stat-accent { color: var(--primary); }
 
-        .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        .ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0; }
-        .ring-container { position: relative; width: 160px; height: 160px; }
-        .ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .ring-num { font-size: 28px; font-weight: 700; color: var(--primary); }
-        .ring-sub { font-size: 11.5px; color: var(--text-light); }
-        .progress-ring__circle { transition: stroke-dashoffset .4s; transform: rotate(-90deg); transform-origin: 50% 50%; }
-        .macro-item { margin-bottom: 14px; }
-        .macro-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .macro-name { font-size: 13px; font-weight: 500; }
-        .macro-val { font-size: 12px; color: var(--text-light); }
-        .progress-bar-bg { height: 6px; background: #E8EAED; border-radius: 99px; }
-        .progress-bar { height: 6px; background: var(--primary); border-radius: 99px; }
+        body {
+            font-family: var(--font);
+            background: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
 
-        .filter-container { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-        .filter-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--sidebar-border); background: var(--bg-page); color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .filter-btn:hover { background: #E8EAED; }
-        .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
 
-        .meal-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; background: var(--bg-page); margin-bottom: 8px; transition: transform 0.2s; border: 1px solid transparent; }
-        .meal-item:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
-        .meal-name { font-size: 13.5px; font-weight: 600; color: var(--text-main); }
-        .meal-cal { font-size: 12px; color: var(--text-light); margin-top: 4px; line-height: 1.4; }
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: transform .25s ease;
+            overflow-y: auto;
+        }
 
-        .btn-add { font-size: 12.5px; font-weight: 600; color: #fff; background: var(--primary); border: none; cursor: pointer; padding: 6px 12px; border-radius: 6px; transition: 0.15s; }
-        .btn-add:hover { background: var(--primary-dark); }
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 20px 16px;
+            border-bottom: 1px solid var(--sidebar-border);
+            color: var(--primary);
+        }
 
-        .btn-generate-full { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #fff; background: var(--primary); border: none; cursor: pointer; padding: 14px; border-radius: 8px; transition: 0.2s; margin-top: 16px; }
-        .btn-generate-full:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .brand-icon {
+            width: 26px;
+            height: 26px;
+        }
 
-        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 99; }
-        @media (max-width: 900px) { .stats-row { grid-template-columns: 1fr 1fr; } .main-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .sidebar-overlay.show { display: block; } .main-content { margin-left: 0; } .hamburger { display: flex; } .page-body { padding: 14px; } .stats-row { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 480px) { .stats-row { grid-template-columns: 1fr; } }
+        .brand-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -.3px;
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--sidebar-border);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .user-role {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 14px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .nav-section {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--text-light);
+            padding: 8px 8px 6px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: background .15s, color .15s;
+        }
+
+        .nav-link:hover {
+            background: var(--nav-hover);
+            color: var(--text-main);
+        }
+
+        .nav-link.active {
+            background: var(--nav-active-bg);
+            color: var(--nav-active-text);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid var(--sidebar-border);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 10px;
+            border-radius: 8px;
+            border: none;
+            background: none;
+            color: #ef4444;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .15s;
+            width: 100%;
+        }
+
+        .logout-btn:hover {
+            background: #FEF2F2;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--sidebar-border);
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .page-body {
+            flex: 1;
+            padding: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--sidebar-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--sidebar-border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+        }
+
+        .stat-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .stat-sub {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .stat-accent {
+            color: var(--primary);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 16px;
+        }
+
+        .ring-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .ring-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+        }
+
+        .ring-label {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ring-num {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .ring-sub {
+            font-size: 11.5px;
+            color: var(--text-light);
+        }
+
+        .progress-ring__circle {
+            transition: stroke-dashoffset .4s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .macro-item {
+            margin-bottom: 14px;
+        }
+
+        .macro-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .macro-name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .macro-val {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .progress-bar-bg {
+            height: 6px;
+            background: #E8EAED;
+            border-radius: 99px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--primary);
+            border-radius: 99px;
+            transition: width 0.4s ease;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--sidebar-border);
+            background: var(--bg-page);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #E8EAED;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .meal-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border-radius: 8px;
+            background: var(--bg-page);
+            margin-bottom: 8px;
+            transition: transform 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .meal-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .meal-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .meal-cal {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        .btn-add {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #fff;
+            background: var(--primary);
+            border: none;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: 0.15s;
+        }
+
+        .btn-add:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-generate-full {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #fff;
+            background: var(--primary);
+            border: none;
+            cursor: pointer;
+            padding: 14px;
+            border-radius: 8px;
+            transition: 0.2s;
+            margin-top: 16px;
+        }
+
+        .btn-generate-full:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            z-index: 99;
+        }
+
+        @media (max-width: 900px) {
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .page-body {
+                padding: 14px;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -115,15 +558,19 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <svg class="brand-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/>
+                <path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor"
+                      fill-rule="evenodd"/>
             </svg>
             <span class="brand-name">Sahaayata</span>
         </div>
 
         <div class="sidebar-user">
-            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
+            <img class="user-avatar"
+                 src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80"
+                 alt="avatar"/>
             <div>
-                <p class="user-name"><%= user.getUsername() %></p>
+                <p class="user-name"><%= user.getUsername() %>
+                </p>
                 <p class="user-role">Member</p>
             </div>
         </div>
@@ -131,28 +578,59 @@
         <nav class="sidebar-nav">
             <p class="nav-section">Main</p>
             <a href="/dashboard" class="nav-link active">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Dashboard
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Dashboard
             </a>
             <a href="/log-meal" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Log Meal
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 8v8M8 12h8"/>
+                </svg>
+                Log Meal
             </a>
             <a href="/my-recipes" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>My Recipes
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                    <rect x="9" y="3" width="6" height="4" rx="1"/>
+                    <path d="M9 12h6M9 16h4"/>
+                </svg>
+                My Recipes
             </a>
             <a href="/community" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Community
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+                Community
             </a>
             <p class="nav-section" style="margin-top:1.25rem;">Account</p>
             <a href="/settings" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+                </svg>
+                Settings
             </a>
             <a href="/change-password" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Change Password
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+                Change Password
             </a>
         </nav>
         <div class="sidebar-footer">
             <a href="/logout" class="logout-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Logout
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+                Logout
             </a>
         </div>
     </aside>
@@ -162,14 +640,17 @@
         <header class="topbar">
             <div style="display:flex;align-items:center;gap:12px;">
                 <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18"/>
+                    </svg>
                 </button>
                 <span class="topbar-title">Dashboard</span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
                 <span style="font-size:13px;color:var(--text-light);">Today, <%= new java.text.SimpleDateFormat("MMM d").format(new java.util.Date()) %></span>
                 <a href="/settings">
-                    <img src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" width="32" height="32" style="border-radius:50%;" alt="avatar"/>
+                    <img src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80"
+                         width="32" height="32" style="border-radius:50%;" alt="avatar"/>
                 </a>
             </div>
         </header>
@@ -179,17 +660,20 @@
             <div class="stats-row">
                 <div class="stat-card">
                     <p class="stat-label">Daily Target</p>
-                    <p class="stat-value stat-accent"><%= tdee %></p>
+                    <p class="stat-value stat-accent"><%= tdee %>
+                    </p>
                     <p class="stat-sub">kcal / day</p>
                 </div>
                 <div class="stat-card">
                     <p class="stat-label">Consumed</p>
-                    <p class="stat-value"><%= consumed %></p>
+                    <p class="stat-value"><%= consumed %>
+                    </p>
                     <p class="stat-sub">kcal today</p>
                 </div>
                 <div class="stat-card">
                     <p class="stat-label">Remaining</p>
-                    <p class="stat-value" style="color:#10b981;"><%= remaining %></p>
+                    <p class="stat-value" style="color:#10b981;"><%= remaining %>
+                    </p>
                     <p class="stat-sub">kcal left</p>
                 </div>
             </div>
@@ -203,14 +687,17 @@
                             <div class="ring-container">
                                 <svg width="160" height="160" viewBox="0 0 160 160">
                                     <circle cx="80" cy="80" r="68" fill="none" stroke="#E8EAED" stroke-width="12"/>
-                                    <circle id="calorie-ring" cx="80" cy="80" r="68" fill="none" stroke="#4F6FEB" stroke-width="12" stroke-linecap="round" stroke-dasharray="427.26" stroke-dashoffset="427.26" class="progress-ring__circle"/>
+                                    <circle id="calorie-ring" cx="80" cy="80" r="68" fill="none" stroke="#4F6FEB"
+                                            stroke-width="12" stroke-linecap="round" stroke-dasharray="427.26"
+                                            stroke-dashoffset="427.26" class="progress-ring__circle"/>
                                 </svg>
                                 <div class="ring-label">
                                     <span class="ring-num"><%= consumed %></span>
                                     <span class="ring-sub">/ <%= tdee %> kcal</span>
                                 </div>
                             </div>
-                            <p style="font-size:13px;color:var(--text-light);text-align:center;">Log meals to see your progress!</p>
+                            <p style="font-size:13px;color:var(--text-light);text-align:center;">Log meals to see your
+                                progress!</p>
                         </div>
                     </div>
 
@@ -219,23 +706,29 @@
                         <div class="macro-item">
                             <div class="macro-header">
                                 <span class="macro-name">Protein</span>
-                                <span class="macro-val">0g / <%= proteinGoal %>g</span>
+                                <span class="macro-val"><%= consumedProtein %>g / <%= proteinGoal %>g</span>
                             </div>
-                            <div class="progress-bar-bg"><div class="progress-bar" style="width:0%;"></div></div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar" style="width:<%= Math.min((consumedProtein * 100.0) / (proteinGoal == 0 ? 1 : proteinGoal), 100) %>%;"></div>
+                            </div>
                         </div>
                         <div class="macro-item">
                             <div class="macro-header">
                                 <span class="macro-name">Carbohydrates</span>
-                                <span class="macro-val">0g / <%= carbGoal %>g</span>
+                                <span class="macro-val"><%= consumedCarbs %>g / <%= carbGoal %>g</span>
                             </div>
-                            <div class="progress-bar-bg"><div class="progress-bar" style="width:0%;background:#f59e0b;"></div></div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar" style="width:<%= Math.min((consumedCarbs * 100.0) / (carbGoal == 0 ? 1 : carbGoal), 100) %>%;background:#f59e0b;"></div>
+                            </div>
                         </div>
                         <div class="macro-item" style="margin-bottom:0;">
                             <div class="macro-header">
                                 <span class="macro-name">Fats</span>
-                                <span class="macro-val">0g / <%= fatGoal %>g</span>
+                                <span class="macro-val"><%= consumedFats %>g / <%= fatGoal %>g</span>
                             </div>
-                            <div class="progress-bar-bg"><div class="progress-bar" style="width:0%;background:#10b981;"></div></div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar" style="width:<%= Math.min((consumedFats * 100.0) / (fatGoal == 0 ? 1 : fatGoal), 100) %>%;background:#10b981;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -246,10 +739,12 @@
                         <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: 600;">For <%= remaining %> kcal</span>
                     </div>
 
-                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Select a goal to get filtered suggestions:</p>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Select a goal to get
+                        filtered suggestions:</p>
 
                     <div class="filter-container">
-                        <button class="filter-btn active" onclick="setFilter('High Protein', event)">High Protein</button>
+                        <button class="filter-btn active" onclick="setFilter('High Protein', event)">High Protein
+                        </button>
                         <button class="filter-btn" onclick="setFilter('Low Carb', event)">Low Carb</button>
                         <button class="filter-btn" onclick="setFilter('Low Fat', event)">Low Fat</button>
                         <button class="filter-btn" onclick="setFilter('Weight Loss', event)">Weight Loss</button>
@@ -258,25 +753,42 @@
 
                     <div style="margin-top: 16px;">
                         <div class="meal-item">
-                            <div><p class="meal-name">Breakfast</p><p class="meal-cal">0 kcal logged</p></div>
-                            <button class="btn-add" id="btn-add-breakfast" onclick="window.location.href='/log-meal?meal=Breakfast&filter=High%20Protein'">+ Add</button>
+                            <div><p class="meal-name">Breakfast</p>
+                                <p class="meal-cal">0 kcal logged</p></div>
+                            <button class="btn-add" id="btn-add-breakfast"
+                                    onclick="window.location.href='/log-meal?meal=Breakfast&filter=High%20Protein'">+
+                                Add
+                            </button>
                         </div>
                         <div class="meal-item">
-                            <div><p class="meal-name">Lunch</p><p class="meal-cal">0 kcal logged</p></div>
-                            <button class="btn-add" id="btn-add-lunch" onclick="window.location.href='/log-meal?meal=Lunch&filter=High%20Protein'">+ Add</button>
+                            <div><p class="meal-name">Lunch</p>
+                                <p class="meal-cal">0 kcal logged</p></div>
+                            <button class="btn-add" id="btn-add-lunch"
+                                    onclick="window.location.href='/log-meal?meal=Lunch&filter=High%20Protein'">+ Add
+                            </button>
                         </div>
                         <div class="meal-item">
-                            <div><p class="meal-name">Dinner</p><p class="meal-cal">0 kcal logged</p></div>
-                            <button class="btn-add" id="btn-add-dinner" onclick="window.location.href='/log-meal?meal=Dinner&filter=High%20Protein'">+ Add</button>
+                            <div><p class="meal-name">Dinner</p>
+                                <p class="meal-cal">0 kcal logged</p></div>
+                            <button class="btn-add" id="btn-add-dinner"
+                                    onclick="window.location.href='/log-meal?meal=Dinner&filter=High%20Protein'">+ Add
+                            </button>
                         </div>
                         <div class="meal-item">
-                            <div><p class="meal-name">Snacks</p><p class="meal-cal">0 kcal logged</p></div>
-                            <button class="btn-add" id="btn-add-snacks" onclick="window.location.href='/log-meal?meal=Snacks&filter=High%20Protein'">+ Add</button>
+                            <div><p class="meal-name">Snacks</p>
+                                <p class="meal-cal">0 kcal logged</p></div>
+                            <button class="btn-add" id="btn-add-snacks"
+                                    onclick="window.location.href='/log-meal?meal=Snacks&filter=High%20Protein'">+ Add
+                            </button>
                         </div>
                     </div>
 
-                    <button class="btn-generate-full" onclick="goToGeneratePage()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #fff; background: var(--primary); border: none; cursor: pointer; padding: 14px; border-radius: 8px; transition: 0.2s; margin-top: 16px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    <button class="btn-generate-full" onclick="goToGeneratePage()"
+                            style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #fff; background: var(--primary); border: none; cursor: pointer; padding: 14px; border-radius: 8px; transition: 0.2s; margin-top: 16px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2">
+                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                        </svg>
                         Suggest Full Meal Plan
                     </button>
                 </div>
@@ -285,8 +797,88 @@
     </div>
 </div>
 
+<style>
+    /* Sahaayata Custom UI Variables for n8n Chat */
+    :root {
+        /* 1. Main Colors (Blue instead of Pink/Navy) */
+        --chat--color-primary: #5876ED !important;
+        --chat--color-secondary: #4a63c7 !important;
+
+        /* 2. Chat Window Shape & Shadow (Modern UI) */
+
+        .chat-window {
+            border-radius: 16px !important;
+            /* Border ko thoda dark aur clear kiya (Cool Gray color) */
+            border: 1.5px solid #94a3b8 !important;
+            /* Shadow ko thoda dark kiya taaki white bg par mast pop ho */
+            box-shadow: 0px 15px 40px rgba(0, 0, 0, 0.22) !important;
+        }
+
+        /* 3. Header Styling (Blue Gradient instead of Black) */
+        --chat--header--background: linear-gradient(135deg, #5876ED, #738cf0) !important;
+        --chat--header--color: #ffffff !important;
+
+        /* 4. Message Bubbles (Rounded & Soft) */
+        --chat--message--border-radius: 12px !important;
+        --chat--message--background--user: #5876ED !important;
+        --chat--message--color--user: #ffffff !important;
+        --chat--message--background--bot: #f4f6fb !important;
+        --chat--message--color--bot: #333333 !important;
+
+        /* 5. The Floating Toggle Button */
+        --chat--toggle--background: #5876ED !important;
+        --chat--toggle--hover--background: #4a63c7 !important;
+    }
+
+    /* Extra Force for strict browsers */
+    .chat-window {
+        border: 1px solid #e2e8f0 !important; /* Light modern border */
+    }
+
+    .chat-toggle {
+        box-shadow: 0 4px 15px rgba(88, 118, 237, 0.4) !important; /* Blue glowing shadow */
+    }
+</style>
+
+<link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet"/>
+<script type="module">
+    import {createChat} from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+    createChat({
+        webhookUrl: 'https://drum-findings-array-relating.trycloudflare.com/webhook/60bfc1fe-7834-4dc2-a299-5145e4920cbd/chat',
+
+        /* 1. Yahan apna Welcome Message likho */
+        initialMessages: [
+            'Welcome to Sahaayata! 🥗',
+            'I am your AI Dietician. Tell me your dietary goals (like Weight Loss or Muscle Gain)!'
+        ],
+
+        /* 2. Yahan Chatbot ka Naam aur Title badlo */
+        i18n: {
+            en: {
+                title: 'Sahaayata AI',
+                subtitle: 'Your Personal Dietician',
+                getStarted: 'Start Chat',
+                inputPlaceholder: 'Type your goal here...',
+            },
+        },
+
+        /* 3. Welcome screen dikhane ke liye (optional but looks good) */
+        showWelcomeScreen: true,
+
+        theme: {
+            color: {
+                primary: '#5876ED'  /* Ye ekdum fresh Green color ka code hai */
+            }
+        }
+    });
+</script>
+
 <script>
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('show');
+    }
 
     const ring = document.getElementById('calorie-ring');
     const consumed = <%= consumed %>, target = <%= tdee %>;
@@ -296,15 +888,25 @@
     let currentFilter = 'High Protein';
 
     function setFilter(filterType, event) {
-        document.querySelectorAll('.filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
+        document.querySelectorAll('.filter-btn').forEach(function (btn) {
+            btn.classList.remove('active');
+        });
         event.target.classList.add('active');
         currentFilter = filterType;
 
         const encodedFilter = encodeURIComponent(currentFilter);
-        document.getElementById('btn-add-breakfast').onclick = function() { window.location.href = '/log-meal?meal=Breakfast&filter=' + encodedFilter; };
-        document.getElementById('btn-add-lunch').onclick = function() { window.location.href = '/log-meal?meal=Lunch&filter=' + encodedFilter; };
-        document.getElementById('btn-add-dinner').onclick = function() { window.location.href = '/log-meal?meal=Dinner&filter=' + encodedFilter; };
-        document.getElementById('btn-add-snacks').onclick = function() { window.location.href = '/log-meal?meal=Snacks&filter=' + encodedFilter; };
+        document.getElementById('btn-add-breakfast').onclick = function () {
+            window.location.href = '/log-meal?meal=Breakfast&filter=' + encodedFilter;
+        };
+        document.getElementById('btn-add-lunch').onclick = function () {
+            window.location.href = '/log-meal?meal=Lunch&filter=' + encodedFilter;
+        };
+        document.getElementById('btn-add-dinner').onclick = function () {
+            window.location.href = '/log-meal?meal=Dinner&filter=' + encodedFilter;
+        };
+        document.getElementById('btn-add-snacks').onclick = function () {
+            window.location.href = '/log-meal?meal=Snacks&filter=' + encodedFilter;
+        };
     }
 
     function goToGeneratePage() {

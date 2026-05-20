@@ -2,9 +2,12 @@ package com.sahaayata.minorproject.controller;
 
 import com.sahaayata.minorproject.dto.LoginRequest;
 import com.sahaayata.minorproject.model.userCredential;
+import com.sahaayata.minorproject.repository.DailyLogRepository;
 import com.sahaayata.minorproject.repository.UserRepository;
 import com.sahaayata.minorproject.service.UserService;
+import com.sahaayata.minorproject.util.UserServiceUtil;
 import jakarta.servlet.http.HttpSession;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +28,8 @@ public class AuthController {
     @Autowired
     private UserRepository userRepository; // Login/Onboarding/Settings updates ke liye
 
+    @Autowired
+    private DailyLogRepository  dailyLogRepository;
 
     // 1. PAGE VIEW METHODS (GET Requests)
 
@@ -51,8 +56,29 @@ public class AuthController {
             return "redirect:/onboarding";
         }
 
-        model.addAttribute("username", user.getUsername());
-        return "dashboard"; // dashboard.jsp
+        java.time.LocalDate today = java.time.LocalDate.now();
+
+        // 1. Fetch from Database
+        Double consumedCals = dailyLogRepository.getTotalCaloriesForToday(user, today);
+        Double consumedProt = dailyLogRepository.getTotalProteinForToday(user, today);
+        Double consumedCarbs = dailyLogRepository.getTotalCarbsForToday(user, today);
+        Double consumedFats = dailyLogRepository.getTotalFatsForToday(user, today);
+
+        // 2. Handle Nulls (agar 0 meal log hui hai)
+        int totalConsumed = (consumedCals != null) ? consumedCals.intValue() : 0;
+        int totalProtein = (consumedProt != null) ? consumedProt.intValue() : 0;
+        int totalCarbs = (consumedCarbs != null) ? consumedCarbs.intValue() : 0;
+        int totalFats = (consumedFats != null) ? consumedFats.intValue() : 0;
+
+        // 3. Send to Dashboard (JSP)
+        model.addAttribute("consumedCalories", totalConsumed);
+        model.addAttribute("consumedProtein", totalProtein);
+        model.addAttribute("consumedCarbs", totalCarbs);
+        model.addAttribute("consumedFats", totalFats);
+        // Model ke andar attribute share karein taaki dashboard.jsp isko read kar sake
+        model.addAttribute("consumedCalories", totalConsumed);
+
+        return "dashboard";
     }
 
     @GetMapping("/onboarding")
@@ -148,6 +174,8 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestBody userCredential user) {
         try {
             // Service call karke user save karein
+            String hashedPass = UserServiceUtil.hashPassword(user.getPassword());
+            user.setPassword(hashedPass);
             userCredential registeredUser = userService.registerUser(user);
             return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
         }
@@ -173,7 +201,7 @@ public class AuthController {
         userCredential user = userRepository.findByEmail(loginRequest.getEmail());
 
         // Password Check
-        if (user != null && user.getPassword().equals(loginRequest.getPassword())) {
+        if (user != null && UserServiceUtil.checkPassword(loginRequest.getPassword(), user.getPassword())){
 
             session.setAttribute("loggedInUser", user);
 
@@ -241,10 +269,7 @@ public class AuthController {
 
     // 2. Process Password Update
     @PostMapping("/change-password")
-    public String updatePassword(@RequestParam("new-password") String newPassword,
-                                 @RequestParam("confirm-password") String confirmPassword,
-                                 HttpSession session,
-                                 Model model) {
+    public String updatePassword(@RequestParam("new-password") String newPassword, @RequestParam("confirm-password") String confirmPassword, HttpSession session, Model model) {
 
         userCredential sessionUser = (userCredential) session.getAttribute("loggedInUser");
         if (sessionUser == null) {

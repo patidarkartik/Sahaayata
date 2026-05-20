@@ -28,5 +28,7 @@ public class UserService {
         // Note: 'onboardingCompleted' default false hi rahega (Entity me set hai)
 
         return userRepository.save(user);
+
+
     }
 }
