@@ -278,8 +278,10 @@
         const query = document.getElementById('food-search').value.trim();
         const resultsDropdown = document.getElementById('search-results');
 
-        if (query.length > 2) {
+        // Yahan > 2 ki jagah >= 0 kar diya hai taaki click karte hi suggestions aayein
+        if (query.length >= 1) {
             try {
+                // Agar query empty hai toh sab kuch layega, nahi toh filter karega
                 const response = await fetch('/searchFood?q=' + encodeURIComponent(query));
                 if (response.ok) {
                     const foods = await response.json();
@@ -291,7 +293,7 @@
                         foods.forEach(food => {
                             const itemDiv = document.createElement('div');
                             itemDiv.className = 'search-item';
-                            itemDiv.onclick = () => selectFood(food);
+                            itemDiv.onclick = () => selectFood(food); // Aapka original function
 
                             const servingU = food.servingUnit || '100g';
 
