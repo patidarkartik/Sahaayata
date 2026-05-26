@@ -808,9 +808,7 @@
 
         .chat-window {
             border-radius: 16px !important;
-            /* Border ko thoda dark aur clear kiya (Cool Gray color) */
             border: 1.5px solid #94a3b8 !important;
-            /* Shadow ko thoda dark kiya taaki white bg par mast pop ho */
             box-shadow: 0px 15px 40px rgba(0, 0, 0, 0.22) !important;
         }
 
@@ -830,13 +828,12 @@
         --chat--toggle--hover--background: #4a63c7 !important;
     }
 
-    /* Extra Force for strict browsers */
     .chat-window {
-        border: 1px solid #e2e8f0 !important; /* Light modern border */
+        border: 1px solid #e2e8f0 !important;
     }
 
     .chat-toggle {
-        box-shadow: 0 4px 15px rgba(88, 118, 237, 0.4) !important; /* Blue glowing shadow */
+        box-shadow: 0 4px 15px rgba(88, 118, 237, 0.4) !important;
     }
 </style>
 
@@ -845,15 +842,14 @@
     import {createChat} from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
     createChat({
-        webhookUrl: 'https://drum-findings-array-relating.trycloudflare.com/webhook/60bfc1fe-7834-4dc2-a299-5145e4920cbd/chat',
+        // YAHAN PAR BHI SAME GLOBAL VARIABLE USE KIYA HAI
+        webhookUrl: '${n8nWebhookUrl}/webhook/60bfc1fe-7834-4dc2-a299-5145e4920cbd/chat',
 
-        /* 1. Yahan apna Welcome Message likho */
         initialMessages: [
             'Welcome to Sahaayata! 🥗',
             'I am your AI Dietician. Tell me your dietary goals (like Weight Loss or Muscle Gain)!'
         ],
 
-        /* 2. Yahan Chatbot ka Naam aur Title badlo */
         i18n: {
             en: {
                 title: 'Sahaayata AI',
@@ -863,12 +859,11 @@
             },
         },
 
-        /* 3. Welcome screen dikhane ke liye (optional but looks good) */
         showWelcomeScreen: true,
 
         theme: {
             color: {
-                primary: '#5876ED'  /* Ye ekdum fresh Green color ka code hai */
+                primary: '#5876ED'
             }
         }
     });

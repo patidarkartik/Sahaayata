@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.sahaayata.minorproject.model.userCredential"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%
     response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
     response.setHeader("Pragma","no-cache");
@@ -13,7 +12,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>My Recipes — Sahaayata</title>
+    <title>${recipe.title} — Sahaayata</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <style>
         :root {
@@ -28,7 +27,7 @@
         body{font-family:var(--font);background:var(--bg-page);color:var(--text-main);min-height:100vh;}
         .app-layout{display:flex;min-height:100vh;}
 
-        /* Sidebar */
+        /* Sidebar Standard */
         .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .25s ease;overflow-y:auto;}
         .sidebar-brand{display:flex;align-items:center;gap:10px;padding:20px 20px 16px;border-bottom:1px solid var(--sidebar-border);color:var(--primary);}
         .brand-icon{width:26px;height:26px;}
@@ -47,47 +46,36 @@
         .logout-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;border:none;background:none;color:#ef4444;font-size:13.5px;font-weight:500;cursor:pointer;text-decoration:none;transition:background .15s;width:100%;}
         .logout-btn:hover{background:#FEF2F2;}
 
-        /* Main */
+        /* Main Content */
         .main-content{flex:1;margin-left:var(--sidebar-width);display:flex;flex-direction:column;min-height:100vh;}
-        .topbar{background:var(--bg-card);border-bottom:1px solid var(--sidebar-border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-        .topbar-title{font-size:16px;font-weight:600;}
+        .topbar { background: var(--bg-card); border-bottom: 1px solid var(--sidebar-border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .back-btn { text-decoration: none; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px; transition: 0.2s; }
+        .back-btn:hover { color: var(--primary); }
         .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text-main);}
-        .page-body{flex:1;padding:24px;}
 
-        /* Recipe specific */
-        .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
-        .btn-primary{background:var(--primary);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .15s;}
-        .btn-primary:hover{background:var(--primary-dark);}
+        .page-body{flex:1;padding:32px 24px;}
+        .container { max-width: 800px; margin: 0 auto; width: 100%; }
 
-        /* search bar */
-        .search-row{display:flex;gap:10px;margin-bottom:20px;}
-        .search-input{flex:1;padding:9px 14px;border:1px solid var(--sidebar-border);border-radius:8px;font-size:13.5px;font-family:var(--font);background:#fff;color:var(--text-main);outline:none;}
-        .search-input:focus{border-color:var(--primary);}
+        .recipe-header { background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid var(--sidebar-border); margin-bottom: 24px; }
+        .recipe-image { width: 100%; height: 350px; object-fit: cover; }
+        .recipe-info { padding: 32px; }
+        .recipe-title { font-size: 28px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        .recipe-tags { font-size: 14px; color: var(--primary); font-weight: 600; margin-bottom: 24px; }
 
-        /* recipe grid */
-        .recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
-        .recipe-card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);overflow:hidden;transition:box-shadow .15s;}
-        .recipe-card:hover{box-shadow:0 4px 14px rgba(79,111,235,.12);}
-        .recipe-img{width:100%;height:150px;object-fit:cover;background:linear-gradient(135deg,#EEF1FD,#d4ddfb);display:flex;align-items:center;justify-content:center;}
-        .recipe-body{padding:14px;}
-        .recipe-title{font-size:15px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .recipe-meta{font-size:12px;color:var(--text-light);display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+        .macro-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; background: var(--primary-light); padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 24px; }
+        .macro-item span { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .macro-item strong { font-size: 20px; color: var(--primary-dark); }
 
-        /* New Log Button Style */
-        .btn-log-card{display:block;width:100%;text-align:center;background:#10b981;color:#fff;padding:8px;border-radius:6px;font-size:12.5px;font-weight:600;text-decoration:none;margin-bottom:8px;transition:background .15s;}
-        .btn-log-card:hover{background:#059669;}
+        .recipe-desc-box { background: #fff; padding: 32px; border-radius: var(--radius); border: 1px solid var(--sidebar-border); }
+        .desc-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+        .desc-content { font-size: 15px; line-height: 1.6; color: var(--text-muted); white-space: pre-wrap; }
 
-        .recipe-actions{display:flex;gap:6px;}
-        .btn-sm{padding:6px 12px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;text-decoration:none;text-align:center;flex:1;}
-        .btn-sm.view{background:var(--primary-light);color:var(--primary);}
-        .btn-sm.delete{background:#FEF2F2;color:#ef4444;}
-        .btn-sm:hover{opacity:.85;}
-
-        /* empty state */
-        .empty-state{text-align:center;padding:60px 20px;color:var(--text-light);}
-        .empty-icon{margin:0 auto 16px;opacity:.25;}
-        .empty-text{font-size:15px;font-weight:500;color:var(--text-muted);margin-bottom:6px;}
-        .empty-sub{font-size:13px;margin-bottom:20px;}
+        .action-row { margin-top: 24px; display: flex; gap: 12px; }
+        .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; text-align: center; cursor: pointer; border: none; font-size: 14px; transition: 0.15s;}
+        .btn-log { background: var(--success, #10b981); color: #fff; flex: 1; }
+        .btn-log:hover { background: #059669; }
+        .btn-danger { background: #FEF2F2; color: #ef4444; border: 1px solid #FCA5A5; }
+        .btn-danger:hover { background: #ef4444; color: #fff; }
 
         .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;}
         @media(max-width:768px){
@@ -96,7 +84,10 @@
             .sidebar-overlay.show{display:block;}
             .main-content{margin-left:0;}
             .hamburger{display:flex;}
-            .page-body{padding:14px;}
+            .page-body{padding:16px;}
+            .recipe-image { height: 250px; }
+            .recipe-info { padding: 20px; }
+            .macro-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -132,60 +123,41 @@
         <header class="topbar">
             <div style="display:flex;align-items:center;gap:12px;">
                 <button class="hamburger" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
-                <span class="topbar-title">My Recipes</span>
+                <a href="/my-recipes" class="back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                    Back to My Recipes
+                </a>
             </div>
-            <a href="/create-recipe" class="btn-primary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                New Recipe
-            </a>
         </header>
 
         <div class="page-body">
-            <div class="search-row">
-                <input type="text" class="search-input" placeholder="Search your recipes..." id="searchInput" oninput="filterRecipes()"/>
-            </div>
+            <div class="container">
+                <div class="recipe-header">
+                    <img src="${recipe.imageUrl}" alt="Recipe Image" class="recipe-image">
+                    <div class="recipe-info">
+                        <h1 class="recipe-title">${recipe.title}</h1>
+                        <p class="recipe-tags">${not empty recipe.tags ? recipe.tags : '#SahaayataRecipe'}</p>
 
-            <div class="recipe-grid" id="recipeGrid">
-                <c:choose>
-                    <c:when test="${not empty recipes}">
-                        <c:forEach var="recipe" items="${recipes}">
-                            <div class="recipe-card" data-title="${recipe.title}">
-                                <div class="recipe-img">
-                                    <c:choose>
-                                        <c:when test="${not empty recipe.imageUrl}">
-                                            <img src="${recipe.imageUrl}" alt="${recipe.title}" style="width:100%; height:100%; object-fit:cover;"/>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4F6FEB" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                                <div class="recipe-body">
-                                    <p class="recipe-title">${recipe.title}</p>
-                                    <div class="recipe-meta">
-                                        <span style="font-weight: 700; color: var(--primary-dark); font-size: 14px;">${recipe.calories} kcal</span>
-                                        <span>P: ${recipe.protein}g | C: ${recipe.carbs}g | F: ${recipe.fats}g</span>
-                                    </div>
+                        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;"><strong>Servings:</strong> ${recipe.servings}</p>
 
-                                    <a href="#" class="btn-log-card" onclick="alert('Log feature coming soon!')">+ Add to Log</a>
-
-                                    <div class="recipe-actions">
-                                        <a href="/recipe/${recipe.id}" class="btn-sm view">View</a>
-                                        <a href="/delete-recipe?id=${recipe.id}" class="btn-sm delete" onclick="return confirm('Delete this recipe?')">Delete</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="empty-state" style="grid-column:1/-1;">
-                            <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4F6FEB" stroke-width="1.2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-                            <p class="empty-text">No recipes yet</p>
-                            <p class="empty-sub">Start building your personal recipe collection.</p>
-                            <a href="/create-recipe" class="btn-primary">Create First Recipe</a>
+                        <div class="macro-grid">
+                            <div class="macro-item"><span>Calories</span><strong>${recipe.calories}</strong></div>
+                            <div class="macro-item"><span>Protein</span><strong>${recipe.protein}g</strong></div>
+                            <div class="macro-item"><span>Carbs</span><strong>${recipe.carbs}g</strong></div>
+                            <div class="macro-item"><span>Fats</span><strong>${recipe.fats}g</strong></div>
                         </div>
-                    </c:otherwise>
-                </c:choose>
+
+                        <div class="action-row">
+                            <button class="btn btn-log" onclick="alert('Log feature coming soon!')">Log to Daily</button>
+                            <a href="/delete-recipe?id=${recipe.id}" class="btn btn-danger" onclick="return confirm('Delete this recipe?')">Delete</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recipe-desc-box">
+                    <h3 class="desc-title">Description & Instructions</h3>
+                    <p class="desc-content">${recipe.description}</p>
+                </div>
             </div>
         </div>
     </div>
@@ -195,12 +167,6 @@
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('open');
         document.getElementById('overlay').classList.toggle('show');
-    }
-    function filterRecipes() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        document.querySelectorAll('.recipe-card').forEach(card => {
-            card.style.display = card.dataset.title.toLowerCase().includes(q) ? '' : 'none';
-        });
     }
 </script>
 </body>

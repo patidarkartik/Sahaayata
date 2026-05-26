@@ -171,7 +171,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Recipe Name</label>
-                        <input name="title" required class="form-input" placeholder="e.g., Green Power Smoothie" type="text"/>
+                        <input name="title" id="recipe-title" required class="form-input" placeholder="e.g., Green Power Smoothie" type="text"/>
                     </div>
 
                     <div class="form-group">
@@ -252,12 +252,14 @@
     }
 
     async function calculateMacrosWithAI() {
+        const title = document.getElementById('recipe-title').value;
         const desc = document.getElementById('recipe-desc').value;
+
         const statusEl = document.getElementById('ai-status');
         const btn = document.getElementById('btn-ai-calc');
 
-        if(desc.trim().length < 10) {
-            alert("Please write the ingredients in the description field first!");
+        if(desc.trim().length < 10 || title.trim().length === 0) {
+            alert("Please enter both Recipe Name and Description first!");
             return;
         }
 
@@ -268,17 +270,22 @@
         statusEl.style.color = "var(--text-muted)";
 
         try {
-            // YAHAN APNA n8n WEBHOOK URL DAALNA HAI
-            const response = await fetch('YOUR_N8N_WEBHOOK_URL_HERE', {
+            const webhookUrl = '${n8nWebhookUrl}/webhook/analyze-macros';
+            console.log("Hitting Webhook: ", webhookUrl);
+
+            const response = await fetch(webhookUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: desc })
+                body: JSON.stringify({ title: title, text: desc })
             });
 
             if (response.ok) {
-                const data = await response.json();
+                let data = await response.json();
 
-                // Directly populating the readonly visual inputs
+                if (Array.isArray(data)) {
+                    data = data[0];
+                }
+
                 document.getElementById('input-cal').value = data.calories || 0;
                 document.getElementById('input-pro').value = data.protein || 0;
                 document.getElementById('input-carb').value = data.carbs || 0;
@@ -287,11 +294,11 @@
                 statusEl.innerText = "✅ Macros calculated successfully!";
                 statusEl.style.color = "var(--success)";
             } else {
-                throw new Error("Failed to fetch from n8n");
+                throw new Error("Failed to fetch from n8n. Status: " + response.status);
             }
         } catch (error) {
             console.error("AI Error:", error);
-            statusEl.innerText = "❌ AI Server error. Check if n8n webhook is active.";
+            statusEl.innerText = "❌ AI Server error. Check console for details.";
             statusEl.style.color = "var(--danger)";
         } finally {
             btn.disabled = false;
