@@ -41,7 +41,7 @@ public class Recipe {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private userCredential user;
+    private UserCredential user;
 
     // ==========================================
     // GETTERS & SETTERS
@@ -83,6 +83,6 @@ public class Recipe {
     public Double getFats() { return fats; }
     public void setFats(Double fats) { this.fats = fats; }
 
-    public userCredential getUser() { return user; }
-    public void setUser(userCredential user) { this.user = user; }
+    public UserCredential getUser() { return user; }
+    public void setUser(UserCredential user) { this.user = user; }
 }

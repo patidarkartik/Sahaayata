@@ -3,11 +3,10 @@ package com.sahaayata.minorproject.controller;
 import com.sahaayata.minorproject.model.DailyLog;
 import com.sahaayata.minorproject.model.Food;
 import com.sahaayata.minorproject.model.Recipe;
-import com.sahaayata.minorproject.model.userCredential;
+import com.sahaayata.minorproject.model.UserCredential;
 import com.sahaayata.minorproject.repository.DailyLogRepository;
 import com.sahaayata.minorproject.repository.FoodRepository;
 import com.sahaayata.minorproject.repository.RecipeRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -46,7 +45,7 @@ public class FoodController {
 
     @PostMapping("/save-recipe")
     public String saveRecipe(@ModelAttribute Recipe recipe, HttpSession session) {
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) return "redirect:/login";
 
         recipe.setUser(user);
@@ -68,18 +67,18 @@ public class FoodController {
 
     @GetMapping("/my-recipes")
     public String showMyRecipes(HttpSession session, Model model) {
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) return "redirect:/login";
 
         List<Recipe> myRecipes = recipeRepository.findByUser(user);
-        model.addAttribute("recipes", myRecipes); // JSP me 'recipes' use ho raha hai
+        model.addAttribute("recipes", myRecipes);
 
         return "my-recipes";
     }
 
     @GetMapping("/recipe/{id}")
     public String viewRecipeDetail(@PathVariable Long id, Model model, HttpSession session) {
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) return "redirect:/login";
 
         Optional<Recipe> recipeOpt = recipeRepository.findById(id);
@@ -92,7 +91,7 @@ public class FoodController {
 
     @GetMapping("/delete-recipe")
     public String deleteRecipe(@RequestParam Long id, HttpSession session) {
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) return "redirect:/login";
 
         Optional<Recipe> recipeOpt = recipeRepository.findById(id);
@@ -105,22 +104,12 @@ public class FoodController {
 
 
     // ==========================================
-    // SECTION 3: COMMUNITY & FOOD BROWSE
+    // SECTION 3: FOOD BROWSE
     // ==========================================
-
-    @GetMapping("/community")
-    public String showCommunityPage(HttpSession session, Model model) {
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
-        if (user == null) return "redirect:/login";
-
-        List<Recipe> allRecipes = recipeRepository.findAll();
-        model.addAttribute("communityRecipes", allRecipes);
-        return "community";
-    }
 
     @GetMapping("/recipes")
     public String showRecipesPage(HttpSession session, Model model) {
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) return "redirect:/login";
 
         List<Food> allFoods = foodRepository.findAll();
@@ -152,7 +141,7 @@ public class FoodController {
             @RequestParam("mealType") String mealType,
             HttpSession session) {
 
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) return "redirect:/login";
 
         Food food = foodRepository.findById(foodId).orElse(null);

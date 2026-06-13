@@ -1,13 +1,12 @@
 package com.sahaayata.minorproject.controller;
 
 import com.sahaayata.minorproject.dto.LoginRequest;
-import com.sahaayata.minorproject.model.userCredential;
+import com.sahaayata.minorproject.model.UserCredential;
 import com.sahaayata.minorproject.repository.DailyLogRepository;
 import com.sahaayata.minorproject.repository.UserRepository;
 import com.sahaayata.minorproject.service.UserService;
 import com.sahaayata.minorproject.util.UserServiceUtil;
 import jakarta.servlet.http.HttpSession;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +44,7 @@ public class AuthController {
 
     @GetMapping("/dashboard")
     public String showDashboard(HttpSession session, Model model) {
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
 
         if (user == null) {
             return "redirect:/login";
@@ -83,7 +82,7 @@ public class AuthController {
 
     @GetMapping("/onboarding")
     public String showOnboardingPage(HttpSession session) {
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) return "redirect:/login";
 
         // Agar already complete hai, to wapas dashboard bhejo
@@ -101,13 +100,13 @@ public class AuthController {
     @GetMapping("/settings")
     public String showSettingsPage(HttpSession session) {
         // Security Check
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) {
             return "redirect:/login";
         }
 
         // Database se fresh data fetch karo (Recommended)
-        userCredential dbUser = userRepository.findById(user.getId()).orElse(null);
+        UserCredential dbUser = userRepository.findById(user.getId()).orElse(null);
 
         if (dbUser != null) {
             session.setAttribute("loggedInUser", dbUser); // Session Refresh
@@ -130,13 +129,13 @@ public class AuthController {
                                 HttpSession session) {
 
         // Session check
-        userCredential currentUser = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential currentUser = (UserCredential) session.getAttribute("loggedInUser");
         if (currentUser == null) {
             return "redirect:/login";
         }
 
         // Database se user nikalo
-        userCredential dbUser = userRepository.findById(currentUser.getId()).orElse(null);
+        UserCredential dbUser = userRepository.findById(currentUser.getId()).orElse(null);
 
         if (dbUser != null) {
             // Basic Info Update
@@ -171,12 +170,12 @@ public class AuthController {
     // --- REGISTER LOGIC ---
     @PostMapping("/register")
     @ResponseBody // JSON return karne ke liye
-    public ResponseEntity<?> registerUser(@RequestBody userCredential user) {
+    public ResponseEntity<?> registerUser(@RequestBody UserCredential user) {
         try {
             // Service call karke user save karein
             String hashedPass = UserServiceUtil.hashPassword(user.getPassword());
             user.setPassword(hashedPass);
-            userCredential registeredUser = userService.registerUser(user);
+            UserCredential registeredUser = userService.registerUser(user);
             return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
         }
         catch (IllegalArgumentException e) {
@@ -198,7 +197,7 @@ public class AuthController {
     @ResponseBody
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest, HttpSession session) {
 
-        userCredential user = userRepository.findByEmail(loginRequest.getEmail());
+        UserCredential user = userRepository.findByEmail(loginRequest.getEmail());
 
         // Password Check
         if (user != null && UserServiceUtil.checkPassword(loginRequest.getPassword(), user.getPassword())){
@@ -223,12 +222,12 @@ public class AuthController {
 
     // --- ONBOARDING SAVE LOGIC (Form Submit) ---
     @PostMapping("/save-onboarding")
-    public String saveOnboardingData(@ModelAttribute userCredential formData, HttpSession session) {
+    public String saveOnboardingData(@ModelAttribute UserCredential formData, HttpSession session) {
 
-        userCredential sessionUser = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential sessionUser = (UserCredential) session.getAttribute("loggedInUser");
         if (sessionUser == null) return "redirect:/login";
 
-        userCredential dbUser = userRepository.findById(sessionUser.getId()).orElse(null);
+        UserCredential dbUser = userRepository.findById(sessionUser.getId()).orElse(null);
 
         if (dbUser != null) {
             dbUser.setAge(formData.getAge());
@@ -260,7 +259,7 @@ public class AuthController {
     // 1. Show Change Password Page
     @GetMapping("/change-password")
     public String showChangePasswordPage(HttpSession session) {
-        userCredential user = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) {
             return "redirect:/login";
         }
@@ -271,7 +270,7 @@ public class AuthController {
     @PostMapping("/change-password")
     public String updatePassword(@RequestParam("new-password") String newPassword, @RequestParam("confirm-password") String confirmPassword, HttpSession session, Model model) {
 
-        userCredential sessionUser = (userCredential) session.getAttribute("loggedInUser");
+        UserCredential sessionUser = (UserCredential) session.getAttribute("loggedInUser");
         if (sessionUser == null) {
             return "redirect:/login";
         }
@@ -283,7 +282,7 @@ public class AuthController {
         }
 
         // 2. Fetch User from DB
-        userCredential dbUser = userRepository.findById(sessionUser.getId()).orElse(null);
+        UserCredential dbUser = userRepository.findById(sessionUser.getId()).orElse(null);
 
         if (dbUser != null) {
             // 3. Update Password

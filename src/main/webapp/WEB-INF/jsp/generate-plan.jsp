@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="com.sahaayata.minorproject.model.userCredential" %>
+<%@ page import="com.sahaayata.minorproject.model.UserCredential" %>
 
 <%
     // Session validation taaki bina login ke koi page na khol sake
@@ -7,7 +7,7 @@
     response.setHeader("Pragma", "no-cache");
     response.setDateHeader("Expires", 0);
 
-    userCredential user = (userCredential) session.getAttribute("loggedInUser");
+    UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
     if (user == null) { response.sendRedirect("/login"); return; }
 %>
 

@@ -1,9 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
-<%@ page import="com.sahaayata.minorproject.model.userCredential"%>
+<%@ page import="com.sahaayata.minorproject.model.UserCredential"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%
     response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
-    userCredential user = (userCredential) session.getAttribute("loggedInUser");
+    UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
     if (user == null) { response.sendRedirect("/login"); return; }
 %>
 <!DOCTYPE html>
@@ -53,6 +53,11 @@
         .feed-action{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text-light);cursor:pointer;transition:color .15s;}
         .feed-action:hover{color:var(--primary);}
 
+        /* Side-by-Side Image Layout CSS */
+        .feed-content-wrapper { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; }
+        .feed-text-area { flex: 1; min-width: 0; white-space: pre-wrap; }
+        .feed-post-img { width: 130px; height: 130px; object-fit: cover; border-radius: 8px; border: 1px solid var(--sidebar-border); flex-shrink: 0; background-color: var(--bg-page); }
+
         .sidebar-right{display:flex;flex-direction:column;gap:12px;align-self:start;position:sticky;top:72px;}
         .card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);padding:16px;}
         .card-title{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;}
@@ -64,7 +69,10 @@
         .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;}
         @media(max-width:900px){.community-grid{grid-template-columns:1fr;}.sidebar-right{display:none;}}
         @media(max-width:768px){.sidebar{transform:translateX(-100%);}
-            .sidebar.open{transform:translateX(0);}.sidebar-overlay.show{display:block;}.main-content{margin-left:0;}.hamburger{display:flex;}.page-body{padding:14px;}}
+            .sidebar.open{transform:translateX(0);}.sidebar-overlay.show{display:block;}.main-content{margin-left:0;}.hamburger{display:flex;}.page-body{padding:14px;}
+            .feed-content-wrapper { flex-direction: column; }
+            .feed-post-img { width: 100%; height: auto; max-height: 250px; }
+        }
     </style>
 </head>
 <body>
@@ -102,40 +110,47 @@
         <div class="page-body">
             <div class="community-grid">
                 <div class="recipe-feed">
-                    <%-- Dynamic feed rendered from model --%>
                     <c:choose>
                         <c:when test="${not empty communityRecipes}">
                             <c:forEach var="r" items="${communityRecipes}">
-                            <div class="feed-card">
-                                <div class="feed-header">
-                                    <img class="feed-avatar" src="https://ui-avatars.com/api/?name=${r.authorName}&background=4F6FEB&color=fff&size=72" alt="avatar"/>
-                                    <div>
-                                        <p class="feed-user">${r.authorName}</p>
-                                        <p class="feed-time">${r.postedDate}</p>
+                                <div class="feed-card">
+                                    <div class="feed-header">
+                                        <img class="feed-avatar" src="https://ui-avatars.com/api/?name=${r.authorName}&background=4F6FEB&color=fff&size=72" alt="avatar"/>
+                                        <div>
+                                            <p class="feed-user">${r.authorName}</p>
+                                            <p class="feed-time">${r.postedDate}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="feed-body">
-                                    <p class="feed-title">${r.name}</p>
-                                    <p class="feed-desc">${r.description}</p>
-                                    <div class="feed-tags">
-                                        <c:forEach var="tag" items="${r.tags}"><span class="tag">${tag}</span></c:forEach>
+                                    <div class="feed-body">
+                                        <div class="feed-content-wrapper">
+                                            <div class="feed-text-area">
+                                                <p class="feed-title">${r.name}</p>
+                                                <p class="feed-desc">${r.description}</p>
+                                                <div class="feed-tags">
+                                                    <c:forEach var="tag" items="${r.tags}"><span class="tag">${tag}</span></c:forEach>
+                                                </div>
+                                            </div>
+
+                                            <c:if test="${not empty r.imageUrl}">
+                                                <img src="${r.imageUrl}" alt="${r.name}" class="feed-post-img" onerror="this.style.display='none'"/>
+                                            </c:if>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="feed-footer">
+                                    <div class="feed-footer">
                                     <span class="feed-action">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                                         ${r.likes} Likes
                                     </span>
-                                    <span class="feed-action">
+                                        <span class="feed-action">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                                         Comment
                                     </span>
-                                    <span class="feed-action">
+                                        <span class="feed-action">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                                         Share
                                     </span>
+                                    </div>
                                 </div>
-                            </div>
                             </c:forEach>
                         </c:when>
                         <c:otherwise>

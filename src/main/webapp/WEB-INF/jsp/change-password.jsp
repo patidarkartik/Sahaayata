@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
-<%@ page import="com.sahaayata.minorproject.model.userCredential"%>
+<%@ page import="com.sahaayata.minorproject.model.UserCredential"%>
 <%
     response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
-    userCredential user = (userCredential) session.getAttribute("loggedInUser");
+    UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
     if (user == null) { response.sendRedirect("/login"); return; }
     String error = (String) request.getAttribute("error");
     String success = (String) request.getAttribute("success");

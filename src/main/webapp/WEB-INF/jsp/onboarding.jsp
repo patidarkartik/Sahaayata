@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="com.sahaayata.minorproject.model.userCredential" %>
+<%@ page import="com.sahaayata.minorproject.model.UserCredential" %>
 
 <%-- 🛑 SECURITY & NO-CACHE LOGIC (Added) --%>
 <%
@@ -9,7 +9,7 @@
     response.setDateHeader("Expires", 0); // Proxies
 
     // 2. Check: User Login hai ya nahi?
-    userCredential user = (userCredential) session.getAttribute("loggedInUser");
+    UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
     if (user == null) {
         response.sendRedirect("/login");
         return;

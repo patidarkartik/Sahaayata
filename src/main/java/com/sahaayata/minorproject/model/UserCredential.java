@@ -2,9 +2,11 @@ package com.sahaayata.minorproject.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "user_details")
-public class userCredential {
+public class UserCredential {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +33,27 @@ public class userCredential {
     private double weight; // in kg
     private String gender;
     private String activityLevel;
+
+    // Community data
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<CommunityPost> posts;
+
+    @OneToMany(mappedBy = "following", cascade = CascadeType.ALL)
+    private List<UserFollower> followers;
+
+    @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL)
+    private List<UserFollower> following;
+
+    // Getters and Setters for the new relations
+    public List<CommunityPost> getPosts() { return posts; }
+    public void setPosts(List<CommunityPost> posts) { this.posts = posts; }
+
+    public List<UserFollower> getFollowers() { return followers; }
+    public void setFollowers(List<UserFollower> followers) { this.followers = followers; }
+
+    public List<UserFollower> getFollowing() { return following; }
+    public void setFollowing(List<UserFollower> following) { this.following = following; }
 
     // ==========================
     //    Getters and Setters
@@ -135,4 +158,7 @@ public class userCredential {
                 ", onboardingCompleted=" + onboardingCompleted +
                 '}';
     }
+
+
+
 }

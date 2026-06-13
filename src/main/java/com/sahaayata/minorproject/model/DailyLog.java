@@ -14,7 +14,7 @@ public class DailyLog {
 
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = false)
-    private userCredential user;
+    private UserCredential user;
 
     @ManyToOne
     @JoinColumn(name = "food_id",nullable = false)
@@ -34,11 +34,11 @@ public class DailyLog {
         this.id = id;
     }
 
-    public userCredential getUser() {
+    public UserCredential getUser() {
         return user;
     }
 
-    public void setUser(userCredential user) {
+    public void setUser(UserCredential user) {
         this.user = user;
     }
 

@@ -1,10 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.sahaayata.minorproject.model.userCredential"%>
+<%@ page import="com.sahaayata.minorproject.model.UserCredential"%>
 <%
     response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
     response.setHeader("Pragma","no-cache");
     response.setDateHeader("Expires",0);
-    userCredential user = (userCredential) session.getAttribute("loggedInUser");
+    UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
     if (user == null) { response.sendRedirect("/login"); return; }
 %>
 <!DOCTYPE html>

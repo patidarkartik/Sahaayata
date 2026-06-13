@@ -1,11 +1,9 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.sahaayata.minorproject.model.userCredential"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java"%>
+<%@ page import="com.sahaayata.minorproject.model.UserCredential"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%
     response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
-    response.setHeader("Pragma","no-cache");
-    response.setDateHeader("Expires",0);
-    userCredential user = (userCredential) session.getAttribute("loggedInUser");
+    UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
     if (user == null) { response.sendRedirect("/login"); return; }
 %>
 <!DOCTYPE html>
@@ -16,19 +14,10 @@
     <title>My Recipes — Sahaayata</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <style>
-        :root {
-            --primary:#4F6FEB;--primary-light:#EEF1FD;--primary-dark:#3451C7;
-            --sidebar-width:240px;--sidebar-bg:#fff;--sidebar-border:#E8EAED;
-            --text-main:#1a1d23;--text-muted:#6b7280;--text-light:#9ca3af;
-            --bg-page:#F4F6FB;--bg-card:#fff;--nav-hover:#F4F6FB;
-            --nav-active-bg:#EEF1FD;--nav-active-text:#4F6FEB;
-            --radius:10px;--font:'DM Sans',system-ui,sans-serif;
-        }
+        :root{--primary:#4F6FEB;--primary-light:#EEF1FD;--primary-dark:#3451C7;--sidebar-width:240px;--sidebar-bg:#fff;--sidebar-border:#E8EAED;--text-main:#1a1d23;--text-muted:#6b7280;--text-light:#9ca3af;--bg-page:#F4F6FB;--bg-card:#fff;--nav-hover:#F4F6FB;--nav-active-bg:#EEF1FD;--nav-active-text:#4F6FEB;--radius:10px;--font:'DM Sans',system-ui,sans-serif;}
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:var(--font);background:var(--bg-page);color:var(--text-main);min-height:100vh;}
         .app-layout{display:flex;min-height:100vh;}
-
-        /* Sidebar */
         .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .25s ease;overflow-y:auto;}
         .sidebar-brand{display:flex;align-items:center;gap:10px;padding:20px 20px 16px;border-bottom:1px solid var(--sidebar-border);color:var(--primary);}
         .brand-icon{width:26px;height:26px;}
@@ -46,63 +35,48 @@
         .sidebar-footer{padding:12px;border-top:1px solid var(--sidebar-border);}
         .logout-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;border:none;background:none;color:#ef4444;font-size:13.5px;font-weight:500;cursor:pointer;text-decoration:none;transition:background .15s;width:100%;}
         .logout-btn:hover{background:#FEF2F2;}
-
-        /* Main */
-        .main-content{flex:1;margin-left:var(--sidebar-width);display:flex;flex-direction:column;min-height:100vh;}
-        .topbar{background:var(--bg-card);border-bottom:1px solid var(--sidebar-border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+        .main-content{flex:1;margin-left:var(--sidebar-width);display:flex;flex-direction:column;}
+        .topbar{background:var(--bg-card);border-bottom:1px solid var(--sidebar-border);padding:0 24px;height:56px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;}
         .topbar-title{font-size:16px;font-weight:600;}
         .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text-main);}
         .page-body{flex:1;padding:24px;}
-
-        /* Recipe specific */
-        .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
-        .btn-primary{background:var(--primary);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .15s;}
-        .btn-primary:hover{background:var(--primary-dark);}
-
-        /* search bar */
-        .search-row{display:flex;gap:10px;margin-bottom:20px;}
-        .search-input{flex:1;padding:9px 14px;border:1px solid var(--sidebar-border);border-radius:8px;font-size:13.5px;font-family:var(--font);background:#fff;color:var(--text-main);outline:none;}
-        .search-input:focus{border-color:var(--primary);}
-
-        /* recipe grid */
-        .recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
-        .recipe-card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);overflow:hidden;transition:box-shadow .15s;}
-        .recipe-card:hover{box-shadow:0 4px 14px rgba(79,111,235,.12);}
-        .recipe-img{width:100%;height:150px;object-fit:cover;background:linear-gradient(135deg,#EEF1FD,#d4ddfb);display:flex;align-items:center;justify-content:center;}
-        .recipe-body{padding:14px;}
-        .recipe-title{font-size:15px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .recipe-meta{font-size:12px;color:var(--text-light);display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
-
-        /* New Log Button Style */
-        .btn-log-card{display:block;width:100%;text-align:center;background:#10b981;color:#fff;padding:8px;border-radius:6px;font-size:12.5px;font-weight:600;text-decoration:none;margin-bottom:8px;transition:background .15s;}
-        .btn-log-card:hover{background:#059669;}
-
-        .recipe-actions{display:flex;gap:6px;}
-        .btn-sm{padding:6px 12px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;text-decoration:none;text-align:center;flex:1;}
-        .btn-sm.view{background:var(--primary-light);color:var(--primary);}
-        .btn-sm.delete{background:#FEF2F2;color:#ef4444;}
-        .btn-sm:hover{opacity:.85;}
-
-        /* empty state */
-        .empty-state{text-align:center;padding:60px 20px;color:var(--text-light);}
-        .empty-icon{margin:0 auto 16px;opacity:.25;}
-        .empty-text{font-size:15px;font-weight:500;color:var(--text-muted);margin-bottom:6px;}
-        .empty-sub{font-size:13px;margin-bottom:20px;}
-
         .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;}
+
+        /* Custom Styles for My Recipes Grid */
+        .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .recipe-card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+        .recipe-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .recipe-img { width: 100%; height: 180px; object-fit: cover; border-bottom: 1px solid var(--sidebar-border); }
+        .recipe-body { padding: 16px; flex: 1; }
+        .recipe-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
+        .recipe-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .macro-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        .macro-badge { background: var(--bg-page); border: 1px solid var(--sidebar-border); border-radius: 6px; padding: 4px 8px; font-size: 11.5px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+        .macro-badge span { color: var(--text-main); font-weight: 700; }
+
+        .recipe-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--sidebar-border); background: #fafafa; flex-wrap: wrap; gap: 10px; }
+        .btn-action { text-decoration: none; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
+        .btn-view { color: var(--primary); background: var(--primary-light); }
+        .btn-view:hover { background: #dbe2fb; }
+        .btn-delete { color: #dc2626; background: #FEE2E2; }
+        .btn-delete:hover { background: #fecaca; }
+        .btn-share { color: #059669; background: #D1FAE5; }
+        .btn-share:hover { background: #a7f3d0; }
+
         @media(max-width:768px){
             .sidebar{transform:translateX(-100%);}
             .sidebar.open{transform:translateX(0);}
             .sidebar-overlay.show{display:block;}
             .main-content{margin-left:0;}
             .hamburger{display:flex;}
-            .page-body{padding:14px;}
+            .page-body{padding:16px;}
+            .recipe-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 <div class="app-layout">
-
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
@@ -130,77 +104,78 @@
 
     <div class="main-content">
         <header class="topbar">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <button class="hamburger" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
-                <span class="topbar-title">My Recipes</span>
-            </div>
-            <a href="/create-recipe" class="btn-primary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            <button class="hamburger" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+            <span class="topbar-title">My Personal Recipes</span>
+
+            <a href="/create-recipe" class="btn-action btn-view" style="margin-left: auto;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 New Recipe
             </a>
         </header>
 
         <div class="page-body">
-            <div class="search-row">
-                <input type="text" class="search-input" placeholder="Search your recipes..." id="searchInput" oninput="filterRecipes()"/>
-            </div>
 
-            <div class="recipe-grid" id="recipeGrid">
-                <c:choose>
-                    <c:when test="${not empty recipes}">
+            <c:choose>
+                <c:when test="${empty recipes}">
+                    <div style="text-align:center;padding:80px 20px;color:var(--text-light);background:var(--bg-card);border:1px dashed var(--sidebar-border);border-radius:var(--radius);">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" style="opacity:.5;margin:0 auto 16px;display:block;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        <p style="font-size:16px;font-weight:600;color:var(--text-main);margin-bottom:8px;">You haven't added any recipes yet</p>
+                        <p style="font-size:14px;margin-bottom:20px;">Calculate macros and keep track of your personal diet.</p>
+                        <a href="/create-recipe" class="btn-action btn-view" style="padding: 10px 20px;">Create First Recipe</a>
+                    </div>
+                </c:when>
+
+                <c:otherwise>
+                    <div class="recipe-grid">
                         <c:forEach var="recipe" items="${recipes}">
-                            <div class="recipe-card" data-title="${recipe.title}">
-                                <div class="recipe-img">
-                                    <c:choose>
-                                        <c:when test="${not empty recipe.imageUrl}">
-                                            <img src="${recipe.imageUrl}" alt="${recipe.title}" style="width:100%; height:100%; object-fit:cover;"/>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4F6FEB" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
+                            <div class="recipe-card">
+                                <img src="${recipe.imageUrl}" alt="${recipe.title}" class="recipe-img" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80'" />
+
                                 <div class="recipe-body">
-                                    <p class="recipe-title">${recipe.title}</p>
-                                    <div class="recipe-meta">
-                                        <span style="font-weight: 700; color: var(--primary-dark); font-size: 14px;">${recipe.calories} kcal</span>
-                                        <span>P: ${recipe.protein}g | C: ${recipe.carbs}g | F: ${recipe.fats}g</span>
+                                    <h3 class="recipe-title">${recipe.title}</h3>
+                                    <p class="recipe-desc">${recipe.description}</p>
+
+                                    <div class="macro-badges">
+                                        <div class="macro-badge">🔥 <span>${recipe.calories}</span> kcal</div>
+                                        <div class="macro-badge">🥩 <span>${recipe.protein}</span> g Pro</div>
+                                        <div class="macro-badge">🌾 <span>${recipe.carbs}</span> g Carb</div>
+                                        <div class="macro-badge">🥑 <span>${recipe.fats}</span> g Fat</div>
+                                    </div>
+                                </div>
+
+                                <div class="recipe-footer">
+                                    <div style="display:flex; gap: 8px;">
+                                        <a href="/recipe/${recipe.id}" class="btn-action btn-view">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            View
+                                        </a>
+                                        <a href="/delete-recipe?id=${recipe.id}" class="btn-action btn-delete" onclick="return confirm('Are you sure you want to delete this recipe?');">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            Delete
+                                        </a>
                                     </div>
 
-                                    <a href="#" class="btn-log-card" onclick="alert('Log feature coming soon!')">+ Add to Log</a>
-
-                                    <div class="recipe-actions">
-                                        <a href="/recipe/${recipe.id}" class="btn-sm view">View</a>
-                                        <a href="/delete-recipe?id=${recipe.id}" class="btn-sm delete" onclick="return confirm('Delete this recipe?')">Delete</a>
-                                    </div>
+                                    <form action="/share-to-community" method="POST" style="margin: 0;">
+                                        <input type="hidden" name="recipeId" value="${recipe.id}" />
+                                        <button type="submit" class="btn-action btn-share">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                            Share
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="empty-state" style="grid-column:1/-1;">
-                            <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4F6FEB" stroke-width="1.2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-                            <p class="empty-text">No recipes yet</p>
-                            <p class="empty-sub">Start building your personal recipe collection.</p>
-                            <a href="/create-recipe" class="btn-primary">Create First Recipe</a>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-            </div>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+
         </div>
     </div>
 </div>
-
 <script>
-    function toggleSidebar() {
+    function toggleSidebar(){
         document.getElementById('sidebar').classList.toggle('open');
         document.getElementById('overlay').classList.toggle('show');
-    }
-    function filterRecipes() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        document.querySelectorAll('.recipe-card').forEach(card => {
-            card.style.display = card.dataset.title.toLowerCase().includes(q) ? '' : 'none';
-        });
     }
 </script>
 </body>

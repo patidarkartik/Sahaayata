@@ -1,6 +1,6 @@
 package com.sahaayata.minorproject.service;
 
-import com.sahaayata.minorproject.model.userCredential;
+import com.sahaayata.minorproject.model.UserCredential;
 import com.sahaayata.minorproject.repository.UserRepository; // ✅ Change 1: Naya Repo Import
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ public class UserService {
     private UserRepository userRepository; // ✅ Change 2: Type UserCredentialRepo se UserRepository hua
 
     @Transactional
-    public userCredential registerUser(userCredential user){
+    public UserCredential registerUser(UserCredential user){
 
         // Check 1: Username exist karta hai?
         if (userRepository.findByUsername(user.getUsername()) != null){
