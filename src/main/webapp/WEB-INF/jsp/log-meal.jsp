@@ -97,6 +97,46 @@
         .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
         .modal-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
         @media(max-width:768px){ .sidebar{transform:translateX(-100%);} .sidebar.open{transform:translateX(0);} .sidebar-overlay.show{display:block;} .main-content{margin-left:0;} .hamburger{display:flex;} .page-body{padding:16px;} .serving-control{flex-direction:column;align-items:stretch;} }
+        
+        /* New Grid Layout CSS */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        @media(max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .scanner-area { border: 2px dashed var(--sidebar-border); border-radius: var(--radius); padding: 40px 20px; text-align: center; cursor: pointer; background: var(--bg-page); transition: all 0.2s; }
+        .scanner-area:hover { border-color: var(--primary); background: var(--primary-light); }
+        .scanner-icon { color: var(--primary); margin-bottom: 12px; }
+        .scanner-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .scanner-subtitle { font-size: 13px; color: var(--text-muted); }
+        .visualizer-container { background: var(--bg-page); border-radius: var(--radius); min-height: 250px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .visualizer-container img { max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; }
+        .scan-badge { position: absolute; top: 10px; right: 10px; background: var(--primary); color: white; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .macro-bar-item { margin-bottom: 16px; }
+        .macro-header { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+        .macro-bar-track { height: 8px; background: var(--sidebar-border); border-radius: 4px; overflow: hidden; }
+        .macro-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+        .fill-protein { background: var(--primary); }
+        .fill-carbs { background: var(--warning); }
+        .fill-fat { background: var(--danger); }
+        .calorie-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid var(--primary-light); border-top-color: var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; transition: all 0.3s; }
+        .calorie-val { font-size: 32px; font-weight: 800; color: var(--text-main); line-height: 1; transition: color 0.3s; }
+        .calorie-label { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 4px; }
+        .plate-item { background: var(--bg-page); border: 1px solid var(--sidebar-border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+        .plate-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .plate-item-cal { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .plate-item-controls { display: flex; align-items: center; gap: 12px; }
+        .range-slider { flex: 1; accent-color: var(--primary); }
+        .btn-remove { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; opacity: 0.7; transition: opacity 0.2s; }
+        .btn-remove:hover { opacity: 1; }
+        #food-adjuster-items { max-height: 280px; overflow-y: auto; padding-right: 8px; margin-bottom: 8px; }
+        #food-adjuster-items::-webkit-scrollbar { width: 6px; }
+        #food-adjuster-items::-webkit-scrollbar-track { background: var(--bg-page); border-radius: 4px; }
+        #food-adjuster-items::-webkit-scrollbar-thumb { background: var(--sidebar-border); border-radius: 4px; }
+        #food-adjuster-items::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
+        .manual-add-section { margin-top: 24px; border-top: 1px solid var(--sidebar-border); padding-top: 16px; }
+        .manual-buttons-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; margin-top: 10px; }
+        .btn-manual-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 12px 8px; background: var(--bg-page); border: 1px solid var(--sidebar-border); border-radius: 8px; cursor: pointer; transition: all 0.2s; color: var(--text-main); }
+        .btn-manual-add:hover { border-color: var(--primary); color: var(--primary); background: #fff; }
+        .btn-manual-add .icon { font-size: 20px; }
+        .btn-manual-add .label { font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -143,8 +183,7 @@
         </header>
 
         <div class="page-body">
-
-            <div class="card">
+            <div class="card" style="margin-bottom: 24px;">
                 <p class="section-title">Search & Log Food</p>
 
                 <form action="/save-daily-log" method="POST" id="logFoodForm">
@@ -156,7 +195,7 @@
                         <div id="search-results" class="search-results"></div>
                     </div>
 
-                    <div id="food-details">
+                    <div id="food-details" style="display: none;">
                         <div class="details-grid">
                             <div class="stat-card"><p class="stat-label">Calories</p><p class="stat-value" id="val-cal">0 kcal</p></div>
                             <div class="stat-card"><p class="stat-label">Protein</p><p class="stat-value" id="val-prot">0 g</p></div>
@@ -177,32 +216,137 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
                                 Check Quality
                             </button>
+                            <button type="button" class="btn btn-secondary" style="border-color: var(--primary); color: var(--primary);" onclick="addCurrentFoodToPlate()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                                Add to Plate
+                            </button>
                             <button type="submit" class="btn btn-primary" id="btn-add-log">Add to Log</button>
                         </div>
                     </div>
                 </form>
             </div>
 
-            <div class="card">
-                <p class="section-title">Upload Food Image to Log (AI Assistance)</p>
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
-                    <button class="btn btn-secondary" style="width: 100%; border-style: dashed;" onclick="document.getElementById('image-upload').click()">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px; vertical-align: middle;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                        Choose Food Image
-                    </button>
-                    <input type="file" id="image-upload" style="display: none;" accept="image/*" onchange="predictImage(event)">
-                    <img id="uploaded-image-preview" src="#" alt="Preview" style="display: none; max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--sidebar-border); margin-top: 10px;"/>
-                </div>
-
-                <div id="prediction-result">
-                    <p id="prediction-text">Thinking...</p>
-                    <div class="confirm-actions">
-                        <button id="btn-predict-yes" class="btn btn-success" style="display: none;" onclick="confirmPrediction(true)">Yes</button>
-                        <button id="btn-predict-no" class="btn btn-danger" style="display: none;" onclick="confirmPrediction(false)">No</button>
+            <div class="dashboard-grid">
+                
+                <!-- Panel 1: Scanner -->
+                <div class="card" id="scanner-section">
+                    <p class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="vertical-align:bottom; margin-right:6px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        Food Scanner
+                    </p>
+                    <div class="scanner-area" onclick="document.getElementById('image-upload').click()">
+                        <input type="file" id="image-upload" style="display: none;" accept="image/*" onchange="predictImage(event)">
+                        <svg class="scanner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <h3 class="scanner-title">Drag & Drop your plate</h3>
+                        <p class="scanner-subtitle">or click to browse from files</p>
+                    </div>
+                    
+                    <div id="prediction-result" style="display:none; margin-top:20px; text-align:center;">
+                        <p id="prediction-text" style="font-weight:600; color:var(--text-main);">Analyzing Image with FoodYOLO AI...</p>
                     </div>
                 </div>
-            </div>
 
+                <!-- Panel 2: Result Visualizer -->
+                <div class="card" id="visualizer-section">
+                    <p class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="vertical-align:bottom; margin-right:6px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        Scan Prediction
+                    </p>
+                    <div class="visualizer-container" id="visualizer-view">
+                        <div id="visualizer-placeholder" style="text-align:center; color:var(--text-muted); font-size:13px; font-weight:500;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:8px; opacity:0.5;"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg><br/>
+                            Scan a food item to view detections
+                        </div>
+                        <img id="uploaded-image-preview" src="" alt="Preview" style="display:none;"/>
+                        <div class="scan-badge" id="scan-badge" style="display:none;">YOLOv8 Scan</div>
+                    </div>
+                </div>
+
+                <!-- Panel 3: Nutrition Summary Card -->
+                <div class="card" id="nutrition-section">
+                    <p class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="vertical-align:bottom; margin-right:6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                        Nutritional Tracker
+                    </p>
+                    
+                    <div class="calorie-circle">
+                        <span class="calorie-val" id="total-calories">0</span>
+                        <span class="calorie-label">KCAL</span>
+                    </div>
+                    
+                    <h3 style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:12px;">Macronutrients Split</h3>
+                    
+                    <div class="macro-bar-item">
+                        <div class="macro-header">
+                            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Protein</span>
+                            <span><strong id="total-protein">0</strong>g</span>
+                        </div>
+                        <div class="macro-bar-track"><div class="macro-bar-fill fill-protein" id="bar-protein" style="width: 0%;"></div></div>
+                    </div>
+                    
+                    <div class="macro-bar-item">
+                        <div class="macro-header">
+                            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg> Carbohydrates</span>
+                            <span><strong id="total-carbs">0</strong>g</span>
+                        </div>
+                        <div class="macro-bar-track"><div class="macro-bar-fill fill-carbs" id="bar-carbs" style="width: 0%;"></div></div>
+                    </div>
+                    
+                    <div class="macro-bar-item">
+                        <div class="macro-header">
+                            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg> Fats</span>
+                            <span><strong id="total-fats">0</strong>g</span>
+                        </div>
+                        <div class="macro-bar-track"><div class="macro-bar-fill fill-fat" id="bar-fat" style="width: 0%;"></div></div>
+                    </div>
+                </div>
+
+                <!-- Panel 4: Interactive Quantities & Plate Logging -->
+                <div class="card" id="logs-section">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <p class="section-title" style="margin-bottom:0;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="vertical-align:bottom; margin-right:6px;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+                            Plate Log & Adjuster
+                        </p>
+                        <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size:12px;" onclick="resetPlate()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg> Reset
+                        </button>
+                    </div>
+                    
+                    <div id="food-adjuster-items">
+                        <p style="color:var(--text-muted); font-size:13px; text-align:center; padding: 20px 0;">No items added yet. Scan a plate or search below.</p>
+                    </div>
+
+                    <div id="plate-saving-section" style="display: none; margin-top: 20px; border-top: 1px solid var(--sidebar-border); padding-top: 20px;">
+                        <button type="button" class="btn btn-primary" style="width: 100%; justify-content: center; font-size:15px; padding:12px;" onclick="logMealToHistory()" id="btn-save-plate">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            Log Meal to History
+                        </button>
+                    </div>
+
+                    <div class="manual-add-section" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--sidebar-border);">
+                        <h3 class="section-title" style="font-size:13px; margin-bottom:12px; color: var(--text-muted);">Quick Add to Plate</h3>
+                        <div class="manual-buttons-grid">
+                            <button type="button" class="btn-manual-add" onclick="addPlateItemFromPrediction('Dal')">
+                                <span class="icon">🥣</span><span class="label">Dal</span>
+                            </button>
+                            <button type="button" class="btn-manual-add" onclick="addPlateItemFromPrediction('Rice')">
+                                <span class="icon">🍚</span><span class="label">Rice</span>
+                            </button>
+                            <button type="button" class="btn-manual-add" onclick="addPlateItemFromPrediction('Roti')">
+                                <span class="icon">🫓</span><span class="label">Roti</span>
+                            </button>
+                            <button type="button" class="btn-manual-add" onclick="addPlateItemFromPrediction('Bhindi')">
+                                <span class="icon">🥬</span><span class="label">Bhindi</span>
+                            </button>
+                            <button type="button" class="btn-manual-add" onclick="addPlateItemFromPrediction('Paneer')">
+                                <span class="icon">🧀</span><span class="label">Paneer</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 </div>
@@ -222,9 +366,11 @@
         document.getElementById('overlay').classList.toggle('show');
     }
 
+    const mealType = "<%= currentMeal %>";
+    let plateItems = [];
+
     let currentFood = null;
 
-    // --- AUTO-FETCH SUGGESTIONS IF COMING FROM DASHBOARD FILTER ---
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const filterStr = urlParams.get('filter');
@@ -232,18 +378,61 @@
 
         if (filterStr && mealStr) {
             fetchFilteredSuggestions(mealStr, filterStr);
+        } else if (filterStr) {
+            addPlateItemFromPrediction(filterStr);
         }
+
+        document.getElementById('logFoodForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            const btnSubmit = document.getElementById('btn-add-log');
+            const originalText = btnSubmit.innerText;
+            btnSubmit.innerText = "Adding...";
+            btnSubmit.disabled = true;
+
+            const formData = new FormData(this);
+            const searchParams = new URLSearchParams();
+            for (const pair of formData) {
+                searchParams.append(pair[0], pair[1]);
+            }
+
+            fetch('/save-daily-log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: searchParams.toString()
+            }).then(res => {
+                btnSubmit.innerText = originalText;
+                btnSubmit.disabled = false;
+                
+                const detailsDiv = document.getElementById('food-details');
+                const existingMsg = document.getElementById('ajax-success-msg');
+                if (existingMsg) existingMsg.remove();
+
+                const successMsg = document.createElement('div');
+                successMsg.id = 'ajax-success-msg';
+                successMsg.style = "margin-top: 16px; padding: 12px; background: var(--success); color: white; border-radius: 8px; text-align: center; font-weight: 500; font-size: 14px;";
+                successMsg.innerHTML = "Added to your log! You can select another item below, or <a href='/dashboard' style='color:white; font-weight:700; text-decoration:underline;'>Go to Dashboard</a>.";
+                
+                detailsDiv.appendChild(successMsg);
+                document.getElementById('serving-qty').value = 1;
+                updateNutrition();
+            }).catch(err => {
+                btnSubmit.innerText = originalText;
+                btnSubmit.disabled = false;
+                console.error(err);
+            });
+        });
     };
 
     async function fetchFilteredSuggestions(meal, filter) {
         const resultsDropdown = document.getElementById('search-results');
 
         try {
-            // Nayi Smart API Call (Meal + Filter dono bhej raha hai)
             const response = await fetch('/getSuggestions?meal=' + encodeURIComponent(meal) + '&filter=' + encodeURIComponent(filter));
 
             if (response.ok) {
                 const foods = await response.json();
+                
+                if (!Array.isArray(foods)) return;
 
                 resultsDropdown.innerHTML = '<div style="padding: 10px 16px; background: var(--primary-light); color: var(--primary); font-size: 11.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">SUGGESTIONS FOR ' + decodeURIComponent(filter) + ' (' + meal + ')</div>';
 
@@ -278,10 +467,8 @@
         const query = document.getElementById('food-search').value.trim();
         const resultsDropdown = document.getElementById('search-results');
 
-        // Yahan > 2 ki jagah >= 0 kar diya hai taaki click karte hi suggestions aayein
         if (query.length >= 1) {
             try {
-                // Agar query empty hai toh sab kuch layega, nahi toh filter karega
                 const response = await fetch('/searchFood?q=' + encodeURIComponent(query));
                 if (response.ok) {
                     const foods = await response.json();
@@ -293,7 +480,7 @@
                         foods.forEach(food => {
                             const itemDiv = document.createElement('div');
                             itemDiv.className = 'search-item';
-                            itemDiv.onclick = () => selectFood(food); // Aapka original function
+                            itemDiv.onclick = () => selectFood(food); 
 
                             const servingU = food.servingUnit || '100g';
 
@@ -331,6 +518,25 @@
         document.getElementById('serving-unit-display').innerText = 'x ' + sUnit + sWeight;
 
         updateNutrition();
+    }
+
+    function addCurrentFoodToPlate() {
+        if (!currentFood) return;
+        const qty = parseFloat(document.getElementById('serving-qty').value) || 1;
+        
+        const pItem = {
+            id: Date.now() + Math.random(),
+            query: currentFood.foodName,
+            matches: [currentFood],
+            selectedMatchIdx: 0,
+            quantity: qty
+        };
+        plateItems.push(pItem);
+        renderPlate();
+        
+        document.getElementById('food-search').value = '';
+        document.getElementById('food-details').style.display = 'none';
+        currentFood = null;
     }
 
     function updateNutrition() {
@@ -373,91 +579,196 @@
 
     document.addEventListener('click', function(event) {
         const searchBox = document.querySelector('.input-group');
-        if (!searchBox.contains(event.target)) {
-            document.getElementById('search-results').style.display = 'none';
+        if (searchBox && !searchBox.contains(event.target)) {
+            const dropdown = document.getElementById('search-results');
+            if(dropdown) dropdown.style.display = 'none';
         }
     });
 
+    // --- Scanner Logic ---
     function predictImage(event) {
         const input = event.target;
         if (input.files && input.files[0]) {
+            const file = input.files[0];
             const reader = new FileReader();
             reader.onload = function(e) {
+                document.getElementById('visualizer-placeholder').style.display = 'none';
                 const previewElement = document.getElementById('uploaded-image-preview');
                 previewElement.src = e.target.result;
                 previewElement.style.display = 'block';
             }
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
 
-            const predictionResult = document.getElementById('prediction-result');
-            const predictionText = document.getElementById('prediction-text');
-            const btnYes = document.getElementById('btn-predict-yes');
-            const btnNo = document.getElementById('btn-predict-no');
+            document.getElementById('prediction-result').style.display = 'block';
+            document.getElementById('prediction-text').innerText = 'Analyzing Image with FoodYOLO...';
+            document.getElementById('scan-badge').style.display = 'none';
 
-            predictionResult.style.display = 'block';
-            predictionText.innerText = 'Analyzing Image with Sahaayata AI...';
-            btnYes.style.display = 'none';
-            btnNo.style.display = 'none';
+            const formData = new FormData();
+            formData.append('file', file);
 
-            setTimeout(() => {
-                const predictedFood = "Apple";
-                predictionText.innerHTML = 'Model predicts: <strong>' + predictedFood + '</strong>. Is this correct?';
-                btnYes.style.display = 'inline-block';
-                btnNo.style.display = 'inline-block';
-            }, 2500);
-        }
-    }
-    async function fetchFilteredSuggestions(meal, filter) {
-        const resultsDropdown = document.getElementById('search-results');
-        try {
-            const response = await fetch('/getSuggestions?meal=' + encodeURIComponent(meal) + '&filter=' + encodeURIComponent(filter));
-            if (response.ok) {
-                const foods = await response.json();
-
-                if (!Array.isArray(foods)) return;
-
-                resultsDropdown.innerHTML = '<div style="padding: 10px 16px; background: var(--primary-light); color: var(--primary); font-size: 11.5px; font-weight: 700; text-transform: uppercase;">SUGGESTIONS FOR ' + decodeURIComponent(filter) + '</div>';
-
-                if(foods.length === 0) {
-                    resultsDropdown.innerHTML += '<div class="search-item"><p class="food-meta">No matching items found. Search manually.</p></div>';
-                } else {
-                    foods.forEach(food => {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'search-item';
-                        itemDiv.onclick = () => selectFood(food);
-                        const servingU = food.servingUnit || '1 serving';
-
-                        itemDiv.innerHTML =
-                            '<div>' +
-                            '<p class="food-name">' + food.foodName + '</p>' +
-                            '<p class="food-meta">' + food.calories + ' kcal per ' + servingU + '</p>' +
-                            '</div>' +
-                            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-                        resultsDropdown.appendChild(itemDiv);
+            fetch('http://localhost:8000/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('prediction-result').style.display = 'none';
+                if(data.success && data.predictions && data.predictions.length > 0) {
+                    if (data.image) {
+                        document.getElementById('uploaded-image-preview').src = data.image;
+                    }
+                    document.getElementById('scan-badge').style.display = 'block';
+                    
+                    const uniqueFoods = [...new Set(data.predictions.map(p => {
+                        let cls = p.class;
+                        return cls.charAt(0).toUpperCase() + cls.slice(1);
+                    }))];
+                    
+                    uniqueFoods.forEach(f => {
+                        addPlateItemFromPrediction(f);
                     });
+                } else {
+                    alert("No food detected. Try another image or add manually.");
                 }
-                resultsDropdown.style.display = 'block';
-            }
-        } catch (error) {
-            console.error("Suggestions Error:", error);
+            })
+            .catch(error => {
+                console.error("FoodYOLO Error:", error);
+                document.getElementById('prediction-result').style.display = 'block';
+                document.getElementById('prediction-text').innerHTML = '<span style="color: var(--danger);">Failed to connect to FoodYOLO.</span>';
+            });
         }
     }
 
-    function confirmPrediction(isCorrect) {
-        const predictionText = document.getElementById('prediction-text');
-        const btnYes = document.getElementById('btn-predict-yes');
-        const btnNo = document.getElementById('btn-predict-no');
-
-        if (isCorrect) {
-            predictionText.innerHTML = '<span style="color: var(--success);">Great! Finding nutritional data...</span>';
-            document.getElementById('food-search').value = "Apple";
-            showSearchResults();
-        } else {
-            predictionText.innerHTML = '<span style="color: var(--danger);">Sorry about that. Please search for the food manually above.</span>';
-        }
-        btnYes.style.display = 'none';
-        btnNo.style.display = 'none';
+    function addPlateItemFromPrediction(foodQuery) {
+        fetch('/searchFood?q=' + encodeURIComponent(foodQuery))
+            .then(res => res.json())
+            .then(matches => {
+                if (matches && matches.length > 0) {
+                    const pItem = {
+                        id: Date.now() + Math.random(),
+                        query: foodQuery,
+                        matches: matches,
+                        selectedMatchIdx: 0,
+                        quantity: 1
+                    };
+                    plateItems.push(pItem);
+                    renderPlate();
+                }
+            });
     }
+
+    // --- State & Rendering ---
+    function renderPlate() {
+        const list = document.getElementById('food-adjuster-items');
+        list.innerHTML = '';
+        
+        let totalCal = 0, totalProt = 0, totalCarbs = 0, totalFats = 0;
+
+        if (plateItems.length === 0) {
+            list.innerHTML = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding: 20px 0;">No items added yet. Scan a plate or search below.</p>';
+        }
+
+        plateItems.forEach((item) => {
+            const match = item.matches[item.selectedMatchIdx];
+            const cal = match.calories * item.quantity;
+            const prot = match.protein * item.quantity;
+            const carbs = match.carbs * item.quantity;
+            const fats = match.fats * item.quantity;
+            
+            totalCal += cal; totalProt += prot; totalCarbs += carbs; totalFats += fats;
+
+            let optionsHtml = '';
+            item.matches.forEach((m, i) => {
+                optionsHtml += `<option value="\${i}" \${i === item.selectedMatchIdx ? 'selected' : ''}>\${m.foodName} (\${m.calories} kcal / \${m.servingUnit || 'unit'})</option>`;
+            });
+
+            const li = document.createElement('div');
+            li.className = 'plate-item';
+            li.innerHTML = `
+                <div class="plate-item-header">
+                    <select class="form-input" style="font-weight:600; padding:6px 10px; font-size:14px; width: 70%; text-overflow: ellipsis;" onchange="updatePlateItemMatch(\${item.id}, this.value)">
+                        \${optionsHtml}
+                    </select>
+                    <span class="plate-item-cal">\${Math.round(cal)} kcal</span>
+                </div>
+                <div class="plate-item-controls">
+                    <input type="range" class="range-slider" min="0.5" max="5" step="0.5" value="\${item.quantity}" oninput="updatePlateItemQty(\${item.id}, this.value)">
+                    <span style="font-weight:700; font-size:13px; width: 40px; text-align:center;">\${item.quantity}x</span>
+                    <button type="button" class="btn-remove" onclick="removePlateItem(\${item.id})">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </div>
+            `;
+            list.appendChild(li);
+        });
+
+        document.getElementById('total-calories').innerText = Math.round(totalCal);
+        document.getElementById('total-protein').innerText = totalProt.toFixed(1);
+        document.getElementById('total-carbs').innerText = totalCarbs.toFixed(1);
+        document.getElementById('total-fats').innerText = totalFats.toFixed(1);
+        
+        document.getElementById('bar-protein').style.width = Math.min((totalProt / 150) * 100, 100) + '%';
+        document.getElementById('bar-carbs').style.width = Math.min((totalCarbs / 300) * 100, 100) + '%';
+        document.getElementById('bar-fat').style.width = Math.min((totalFats / 70) * 100, 100) + '%';
+        
+        document.getElementById('plate-saving-section').style.display = plateItems.length > 0 ? 'block' : 'none';
+    }
+
+    function updatePlateItemMatch(id, newIdx) {
+        const item = plateItems.find(p => p.id === id);
+        if(item) { item.selectedMatchIdx = parseInt(newIdx); renderPlate(); }
+    }
+    function updatePlateItemQty(id, newQty) {
+        const item = plateItems.find(p => p.id === id);
+        if(item) { item.quantity = parseFloat(newQty); renderPlate(); }
+    }
+    function removePlateItem(id) {
+        plateItems = plateItems.filter(p => p.id !== id);
+        renderPlate();
+    }
+    function resetPlate() {
+        plateItems = [];
+        document.getElementById('uploaded-image-preview').style.display = 'none';
+        document.getElementById('scan-badge').style.display = 'none';
+        document.getElementById('visualizer-placeholder').style.display = 'block';
+        document.getElementById('prediction-result').style.display = 'none';
+        renderPlate();
+    }
+
+    // --- Save to Backend ---
+    function logMealToHistory() {
+        if(plateItems.length === 0) return;
+        
+        const btnSave = document.getElementById('btn-save-plate');
+        btnSave.innerText = "Saving to History...";
+        btnSave.disabled = true;
+
+        const fetchPromises = plateItems.map(item => {
+            const match = item.matches[item.selectedMatchIdx];
+            const searchParams = new URLSearchParams();
+            searchParams.append('foodId', match.id);
+            searchParams.append('servingQty', item.quantity);
+            searchParams.append('mealType', mealType);
+
+            return fetch('/save-daily-log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: searchParams.toString()
+            });
+        });
+
+        Promise.all(fetchPromises)
+            .then(() => {
+                window.location.href = '/dashboard';
+            })
+            .catch(err => {
+                console.error(err);
+                alert("An error occurred while saving the meal.");
+                btnSave.innerText = "Log Meal to History";
+                btnSave.disabled = false;
+            });
+    }
+
 </script>
 </body>
 </html>
