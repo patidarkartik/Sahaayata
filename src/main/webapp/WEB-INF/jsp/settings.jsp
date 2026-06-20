@@ -112,6 +112,12 @@
                     <p class="section-sub">Update your personal information</p>
                 </div>
                 <div class="section-body">
+                    <% if (request.getAttribute("successProfile") != null) { %>
+                        <p style="color: #059669; font-size: 13.5px; margin-bottom: 16px; font-weight: 600; background: #ecfdf5; padding: 10px 14px; border-radius: 8px; border: 1px solid #a7f3d0;">✅ <%= request.getAttribute("successProfile") %></p>
+                    <% } %>
+                    <% if (request.getAttribute("errorProfile") != null) { %>
+                        <p style="color: #dc2626; font-size: 13.5px; margin-bottom: 16px; font-weight: 600; background: #fef2f2; padding: 10px 14px; border-radius: 8px; border: 1px solid #fecaca;">❌ <%= request.getAttribute("errorProfile") %></p>
+                    <% } %>
                     <div class="avatar-row">
                         <img class="avatar-lg" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=128" alt="avatar"/>
                         <div>
@@ -127,7 +133,7 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email</label>
-                                <input type="email" class="form-input" name="email" value="<%= user.getEmail() %>"/>
+                                <input type="email" class="form-input" name="email" value="<%= user.getEmail() %>" readonly style="background: #f4f6fb; cursor: not-allowed;"/>
                             </div>
                         </div>
                         <button type="submit" class="btn-primary">Save Changes</button>
@@ -142,6 +148,9 @@
                     <p class="section-sub">Used to calculate your daily calorie target</p>
                 </div>
                 <div class="section-body">
+                    <% if (request.getAttribute("successStats") != null) { %>
+                        <p style="color: #059669; font-size: 13.5px; margin-bottom: 16px; font-weight: 600; background: #ecfdf5; padding: 10px 14px; border-radius: 8px; border: 1px solid #a7f3d0;">✅ <%= request.getAttribute("successStats") %></p>
+                    <% } %>
                     <form action="/update-stats" method="post">
                         <div class="form-row">
                             <div class="form-group">

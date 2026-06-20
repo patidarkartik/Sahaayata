@@ -94,6 +94,35 @@
             .page-body { padding: 16px; }
             .page-header-row { flex-direction: column; align-items: flex-start; }
         }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #10b981;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.error {
+            background: #ef4444;
+        }
     </style>
 </head>
 <body>
@@ -181,6 +210,11 @@
     </div>
 </div>
 
+<div class="toast" id="toast-message">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    <span id="toast-text">Plan logged successfully!</span>
+</div>
+
 <style>
     @keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
@@ -241,7 +275,7 @@
                     '<div class="food-item">' + plan.snacks.qty + ' x ' + plan.snacks.name + ' (' + plan.snacks.unit + ')</div>' +
                     '<div class="food-cal">' + plan.snacks.cal + ' kcal</div>' +
                     '</div>' +
-                    '<button class="btn-use" onclick="alert(\'' + plan.optionName + ' selected! Implement DB saving logic here.\')">Log This Plan</button>' +
+                    '<button class="btn-use" onclick="logPlan(\'' + encodeURIComponent(JSON.stringify(plan)) + '\')">Log This Plan</button>' +
                     '</div>';
 
                 container.innerHTML += html;
@@ -251,6 +285,73 @@
             container.innerHTML = '<div class="loading-text" style="color:#ef4444;">Failed to fetch data. Database connection error.</div>';
         }
     };
+
+    async function logPlan(planJson) {
+        const plan = JSON.parse(decodeURIComponent(planJson));
+        const payload = [];
+        
+        // Add breakfast
+        payload.push({ mealType: 'Breakfast', name: plan.breakfast.name, quantity: plan.breakfast.qty });
+        // Add lunch
+        payload.push({ mealType: 'Lunch', name: plan.lunch.grainName, quantity: plan.lunch.grainQty });
+        payload.push({ mealType: 'Lunch', name: plan.lunch.dishName, quantity: plan.lunch.dishQty });
+        // Add dinner
+        payload.push({ mealType: 'Dinner', name: plan.dinner.grainName, quantity: plan.dinner.grainQty });
+        payload.push({ mealType: 'Dinner', name: plan.dinner.dishName, quantity: plan.dinner.dishQty });
+        // Add snacks
+        payload.push({ mealType: 'Snacks', name: plan.snacks.name, quantity: plan.snacks.qty });
+
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = 'Logging...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/log-full-plan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if(data.success) {
+                showToast('Plan logged successfully! Redirecting...', false);
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 1500);
+            } else {
+                showToast('Failed to log plan.', true);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        } catch(e) {
+            console.error(e);
+            showToast('Failed to log plan. Network error.', true);
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    function showToast(message, isError) {
+        const toast = document.getElementById('toast-message');
+        const text = document.getElementById('toast-text');
+        text.innerText = message;
+        
+        if (isError) {
+            toast.classList.add('error');
+            toast.querySelector('svg').innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+        } else {
+            toast.classList.remove('error');
+            toast.querySelector('svg').innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+        }
+        
+        toast.classList.add('show');
+        
+        if (isError) {
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    }
 </script>
 </body>
 </html>

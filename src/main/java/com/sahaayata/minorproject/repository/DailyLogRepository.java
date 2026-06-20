@@ -24,4 +24,7 @@ public interface DailyLogRepository extends JpaRepository<DailyLog, Long> {
 
     @Query("SELECT SUM(d.food.fats * d.quantity) FROM DailyLog d WHERE d.user = :user AND d.logDate = :date")
     Double getTotalFatsForToday(@Param("user") UserCredential user, @Param("date") LocalDate date);
+
+    @Query("SELECT SUM(d.food.calories * d.quantity) FROM DailyLog d WHERE d.user = :user AND d.logDate = :date AND d.mealType = :mealType")
+    Double getTotalCaloriesForMealToday(@Param("user") UserCredential user, @Param("date") LocalDate date, @Param("mealType") String mealType);
 }

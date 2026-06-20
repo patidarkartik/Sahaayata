@@ -157,4 +157,47 @@ public class FoodController {
         }
         return "redirect:/dashboard";
     }
+
+    @PostMapping("/log-recipe")
+    public String logRecipe(@RequestParam("recipeId") Long recipeId,
+                            @RequestParam("mealType") String mealType,
+                            @RequestParam(value = "loggedServings", required = false) Double loggedServings,
+                            HttpSession session) {
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
+        if (user == null) return "redirect:/login";
+
+        Optional<Recipe> recipeOpt = recipeRepository.findById(recipeId);
+        if (recipeOpt.isPresent()) {
+            Recipe recipe = recipeOpt.get();
+
+            // Find or create food entry for this recipe
+            Food food = foodRepository.findFirstByFoodName(recipe.getTitle());
+            if (food == null) {
+                food = new Food();
+                food.setFoodName(recipe.getTitle());
+                food.setCalories(recipe.getCalories());
+                food.setProtein(recipe.getProtein());
+                food.setCarbs(recipe.getCarbs());
+                food.setFats(recipe.getFats());
+                food.setServingUnit("servings");
+                food.setDefaultServingWeight(1.0);
+                food.setCategory("Custom Recipe");
+                food = foodRepository.save(food);
+            }
+
+            Double totalServings = recipe.getServings() != null && recipe.getServings() > 0 ? recipe.getServings() : 1.0;
+            Double servingsToLog = loggedServings != null && loggedServings > 0 ? loggedServings : totalServings;
+            Double quantityFraction = servingsToLog / totalServings;
+
+            DailyLog log = new DailyLog();
+            log.setUser(user);
+            log.setFood(food);
+            log.setQuantity(quantityFraction); // Log fractional quantity based on servings
+            log.setMealType(mealType);
+            log.setLogDate(java.time.LocalDate.now());
+
+            dailyLogRepository.save(log);
+        }
+        return "redirect:/dashboard";
+    }
 }

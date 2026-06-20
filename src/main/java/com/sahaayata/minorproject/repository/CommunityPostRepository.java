@@ -9,4 +9,7 @@ import java.util.List;
 @Repository
 public interface CommunityPostRepository extends JpaRepository<CommunityPost, Long> {
     List<CommunityPost> findAllByOrderByCreatedAtDesc();
+
+    @org.springframework.data.jpa.repository.Query("SELECT p.user.username, COUNT(p) as postCount FROM CommunityPost p GROUP BY p.user.username ORDER BY postCount DESC")
+    List<Object[]> findTopContributors(org.springframework.data.domain.Pageable pageable);
 }

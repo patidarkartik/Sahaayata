@@ -75,7 +75,7 @@
     <header
             class="absolute top-0 left-0 right-0 z-10 p-6 md:px-12 md:py-6 flex items-center justify-between"
     >
-        <a class="flex items-center gap-3" href="#">
+        <a class="flex items-center gap-3" href="/">
             <svg
                     class="h-8 w-8 text-primary"
                     fill="currentColor"
@@ -93,12 +93,15 @@
             >Sahaayata</span
             >
         </a>
-        <a
-                class="px-6 py-2 text-sm font-semibold rounded-full bg-primary text-background-dark hover:bg-primary/90 transition-colors"
-                href="/register"
-        >
-            Sign Up
-        </a>
+        <div class="flex items-center gap-4">
+            <a class="text-sm font-medium hover:text-primary transition-colors" href="/">Home</a>
+            <a
+                    class="px-6 py-2 text-sm font-semibold rounded-full bg-primary text-background-dark hover:bg-primary/90 transition-colors"
+                    href="/register"
+            >
+                Sign Up
+            </a>
+        </div>
     </header>
     <main class="flex-grow flex items-center justify-center px-4 py-20">
         <div

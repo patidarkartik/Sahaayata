@@ -137,18 +137,35 @@
                                         </div>
                                     </div>
                                     <div class="feed-footer">
-                                    <span class="feed-action">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                                        ${r.likes} Likes
-                                    </span>
+                                        <span class="feed-action" onclick="likePost(${r.id}, this)">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                                            <span class="like-count">${r.likes}</span> Likes
+                                        </span>
+                                        <span class="feed-action" onclick="focusComment(${r.id})">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                                            Comment
+                                        </span>
                                         <span class="feed-action">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                                        Comment
-                                    </span>
-                                        <span class="feed-action">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                                        Share
-                                    </span>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                            Share
+                                        </span>
+                                    </div>
+                                    <div class="comments-section" style="padding: 10px 16px; background: #fafafa; border-top: 1px solid var(--sidebar-border); font-size: 13px; color: var(--text-main);">
+                                        <div class="comments-list" id="comments-${r.id}">
+                                            <c:forEach var="c" items="${r.comments}" varStatus="status">
+                                                <div class="comment-item ${status.index >= 3 ? 'hidden-comment' : ''}" style="margin-bottom: 5px; ${status.index >= 3 ? 'display: none;' : ''}">${c}</div>
+                                            </c:forEach>
+                                        </div>
+                                        <c:if test="${r.comments.size() > 3}">
+                                            <div class="view-more-comments" style="color: var(--text-light); font-size: 12px; cursor: pointer; margin-top: 4px;" onclick="toggleComments(${r.id}, this)">
+                                                View all ${r.comments.size()} comments
+                                            </div>
+                                        </c:if>
+                                        
+                                        <div class="comment-input-area" style="display: flex; gap: 8px; margin-top: 12px; align-items: center;">
+                                            <input type="text" id="comment-input-${r.id}" placeholder="Add a comment..." style="flex: 1; padding: 8px 12px; border: 1px solid var(--sidebar-border); border-radius: 20px; font-size: 13px; outline: none; font-family: var(--font);" />
+                                            <button onclick="postComment(${r.id})" style="background: none; border: none; color: var(--primary); font-weight: 600; font-size: 13px; cursor: pointer; padding: 4px 8px;">Post</button>
+                                        </div>
                                     </div>
                                 </div>
                             </c:forEach>
@@ -166,9 +183,22 @@
                 <aside class="sidebar-right">
                     <div class="card">
                         <p class="card-title">Top Contributors</p>
-                        <div class="top-user"><img class="top-avatar" src="https://ui-avatars.com/api/?name=Priya+Sharma&background=10b981&color=fff&size=64" alt=""/><div><p class="top-name">Priya Sharma</p><p class="top-count">12 recipes</p></div></div>
-                        <div class="top-user"><img class="top-avatar" src="https://ui-avatars.com/api/?name=Arjun+Mehta&background=f59e0b&color=fff&size=64" alt=""/><div><p class="top-name">Arjun Mehta</p><p class="top-count">9 recipes</p></div></div>
-                        <div class="top-user"><img class="top-avatar" src="https://ui-avatars.com/api/?name=Sneha+Rao&background=ef4444&color=fff&size=64" alt=""/><div><p class="top-name">Sneha Rao</p><p class="top-count">7 recipes</p></div></div>
+                        <c:choose>
+                            <c:when test="${not empty topContributors}">
+                                <c:forEach var="tc" items="${topContributors}">
+                                    <div class="top-user">
+                                        <img class="top-avatar" src="https://ui-avatars.com/api/?name=${tc.username}&background=10b981&color=fff&size=64" alt=""/>
+                                        <div>
+                                            <p class="top-name">${tc.username}</p>
+                                            <p class="top-count">${tc.recipeCount} recipes</p>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <p style="font-size: 12px; color: var(--text-light);">No contributors yet.</p>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                     <div class="card">
                         <p class="card-title">Popular Tags</p>
@@ -185,6 +215,67 @@
         </div>
     </div>
 </div>
-<script>function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}</script>
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('show');
+    }
+
+    async function likePost(postId, el) {
+        const formData = new FormData();
+        formData.append("postId", postId);
+        try {
+            const res = await fetch('/like-post', { method: 'POST', body: formData });
+            const data = await res.json();
+            if(data.success) {
+                el.querySelector('.like-count').innerText = data.likes;
+                el.style.color = 'var(--primary)';
+                el.style.fontWeight = '600';
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    function toggleComments(postId, el) {
+        const list = document.getElementById('comments-' + postId);
+        const hidden = list.querySelectorAll('.hidden-comment');
+        hidden.forEach(c => c.style.display = 'block');
+        if(el) {
+            el.style.display = 'none';
+        } else {
+            const viewMore = list.parentElement.querySelector('.view-more-comments');
+            if(viewMore) viewMore.style.display = 'none';
+        }
+    }
+
+    function focusComment(postId) {
+        toggleComments(postId);
+        document.getElementById('comment-input-' + postId).focus();
+    }
+
+    async function postComment(postId) {
+        const input = document.getElementById('comment-input-' + postId);
+        const text = input.value;
+        if(!text || !text.trim()) return;
+
+        const formData = new FormData();
+        formData.append("postId", postId);
+        formData.append("text", text);
+        try {
+            const res = await fetch('/add-comment', { method: 'POST', body: formData });
+            const data = await res.json();
+            if(data.success) {
+                const list = document.getElementById('comments-' + postId);
+                const div = document.createElement('div');
+                div.style.marginBottom = '5px';
+                div.innerHTML = "<b>" + data.author + ":</b> " + data.text;
+                list.appendChild(div);
+                input.value = '';
+                toggleComments(postId); // Ensures any hidden comments are shown when a new one is added
+            } else {
+                alert("Failed to post comment.");
+            }
+        } catch(e) { console.error(e); }
+    }
+</script>
 </body>
 </html>

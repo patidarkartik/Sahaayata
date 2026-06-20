@@ -42,12 +42,18 @@
 
 <body class="font-body bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark">
 <div class="min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="w-full max-w-md">
+    <a href="/" class="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        Back to Home
+    </a>
+    <div class="w-full max-w-md mt-12 md:mt-0">
 
         <div class="text-center mb-8">
-            <h1 class="font-display text-4xl font-bold text-primary">
-                Sahaayata
-            </h1>
+            <a href="/" class="inline-block">
+                <h1 class="font-display text-4xl font-bold text-primary hover:opacity-90 transition-opacity">
+                    Sahaayata
+                </h1>
+            </a>
             <p class="text-muted-foreground-light dark:text-muted-foreground-dark mt-2">
                 Create your account to start your fitness journey.
             </p>

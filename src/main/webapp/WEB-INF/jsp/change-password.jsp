@@ -2,8 +2,12 @@
 <%@ page import="com.sahaayata.minorproject.model.UserCredential"%>
 <%
     response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
+    response.setHeader("Pragma","no-cache");
+    response.setDateHeader("Expires",0);
     UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
     if (user == null) { response.sendRedirect("/login"); return; }
+
+    // Flash attributes from RedirectAttributes are stored in session
     String error = (String) request.getAttribute("error");
     String success = (String) request.getAttribute("success");
 %>
@@ -41,13 +45,27 @@
         .form-card-sub{font-size:13px;color:var(--text-light);margin-bottom:24px;}
         .form-group{margin-bottom:16px;}
         .form-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
-        .form-input{width:100%;padding:9px 12px;border:1px solid var(--sidebar-border);border-radius:8px;font-size:14px;font-family:var(--font);color:var(--text-main);background:#fff;outline:none;transition:border-color .15s;}
+        .input-wrapper{position:relative;}
+        .form-input{width:100%;padding:9px 40px 9px 12px;border:1px solid var(--sidebar-border);border-radius:8px;font-size:14px;font-family:var(--font);color:var(--text-main);background:#fff;outline:none;transition:border-color .15s;}
         .form-input:focus{border-color:var(--primary);}
-        .btn-primary{background:var(--primary);color:#fff;border:none;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;width:100%;}
+        .toggle-pw{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-light);padding:4px;display:flex;align-items:center;transition:color .15s;}
+        .toggle-pw:hover{color:var(--text-main);}
+        .btn-primary{background:var(--primary);color:#fff;border:none;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s, transform .1s;width:100%;}
         .btn-primary:hover{background:var(--primary-dark);}
-        .alert{padding:10px 14px;border-radius:8px;font-size:13.5px;margin-bottom:18px;}
+        .btn-primary:active{transform:scale(0.98);}
+        .btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+
+        /* Alerts */
+        .alert{padding:10px 14px;border-radius:8px;font-size:13.5px;margin-bottom:18px;display:flex;align-items:center;gap:8px;animation:slideDown .3s ease;}
         .alert-error{background:#FEF2F2;color:#dc2626;border:1px solid #FCA5A5;}
         .alert-success{background:#D1FAE5;color:#059669;border:1px solid #6EE7B7;}
+        @keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+
+        /* Password strength bar */
+        .pw-strength{height:4px;border-radius:2px;background:#e5e7eb;margin-top:6px;overflow:hidden;transition:opacity .2s;}
+        .pw-strength-bar{height:100%;border-radius:2px;width:0;transition:width .3s, background .3s;}
+        .pw-hint{font-size:11px;color:var(--text-light);margin-top:4px;transition:color .2s;}
+
         .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;}
         @media(max-width:768px){.sidebar{transform:translateX(-100%);}
             .sidebar.open{transform:translateX(0);}.sidebar-overlay.show{display:block;}.main-content{margin-left:0;}.hamburger{display:flex;}.page-body{padding:14px;}}
@@ -90,28 +108,122 @@
                 <p class="form-card-title">Update Password</p>
                 <p class="form-card-sub">Choose a strong new password to secure your account.</p>
 
-                <% if (error != null) { %><div class="alert alert-error"><%= error %></div><% } %>
-                <% if (success != null) { %><div class="alert alert-success"><%= success %></div><% } %>
+                <% if (error != null) { %><div class="alert alert-error">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                    <%= error %>
+                </div><% } %>
+                <% if (success != null) { %><div class="alert alert-success">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                    <%= success %>
+                </div><% } %>
 
-                <form action="/change-password" method="post">
+                <form action="/change-password" method="post" id="changePasswordForm">
                     <div class="form-group">
                         <label class="form-label">Current Password</label>
-                        <input type="password" class="form-input" name="currentPassword" required autocomplete="current-password"/>
+                        <div class="input-wrapper">
+                            <input type="password" class="form-input" name="currentPassword" id="currentPassword" required autocomplete="current-password"/>
+                            <button type="button" class="toggle-pw" onclick="togglePassword('currentPassword', this)" title="Show password">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">New Password</label>
-                        <input type="password" class="form-input" name="newPassword" required minlength="8" autocomplete="new-password"/>
+                        <div class="input-wrapper">
+                            <input type="password" class="form-input" name="newPassword" id="newPassword" required minlength="8" autocomplete="new-password" oninput="checkStrength(this.value)"/>
+                            <button type="button" class="toggle-pw" onclick="togglePassword('newPassword', this)" title="Show password">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <div class="pw-strength"><div class="pw-strength-bar" id="strengthBar"></div></div>
+                        <p class="pw-hint" id="strengthHint">Minimum 8 characters</p>
                     </div>
                     <div class="form-group" style="margin-bottom:22px;">
                         <label class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-input" name="confirmPassword" required minlength="8" autocomplete="new-password"/>
+                        <div class="input-wrapper">
+                            <input type="password" class="form-input" name="confirmPassword" id="confirmPassword" required minlength="8" autocomplete="new-password" oninput="checkMatch()"/>
+                            <button type="button" class="toggle-pw" onclick="togglePassword('confirmPassword', this)" title="Show password">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <p class="pw-hint" id="matchHint" style="opacity:0;">&nbsp;</p>
                     </div>
-                    <button type="submit" class="btn-primary">Update Password</button>
+                    <button type="submit" class="btn-primary" id="submitBtn">Update Password</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-<script>function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}</script>
+<script>
+function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+}
+
+function togglePassword(inputId, btn){
+    var inp = document.getElementById(inputId);
+    if(inp.type === 'password'){
+        inp.type = 'text';
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    } else {
+        inp.type = 'password';
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    }
+}
+
+function checkStrength(pw){
+    var bar = document.getElementById('strengthBar');
+    var hint = document.getElementById('strengthHint');
+    var score = 0;
+    if(pw.length >= 8) score++;
+    if(pw.length >= 12) score++;
+    if(/[A-Z]/.test(pw)) score++;
+    if(/[0-9]/.test(pw)) score++;
+    if(/[^A-Za-z0-9]/.test(pw)) score++;
+
+    var widths = ['0%','20%','40%','60%','80%','100%'];
+    var colors = ['#e5e7eb','#ef4444','#f97316','#eab308','#22c55e','#059669'];
+    var labels = ['Minimum 8 characters','Very Weak','Weak','Fair','Strong','Very Strong'];
+
+    bar.style.width = widths[score];
+    bar.style.background = colors[score];
+    hint.textContent = labels[score];
+    hint.style.color = colors[score];
+
+    checkMatch();
+}
+
+function checkMatch(){
+    var np = document.getElementById('newPassword').value;
+    var cp = document.getElementById('confirmPassword').value;
+    var hint = document.getElementById('matchHint');
+
+    if(cp.length === 0){
+        hint.style.opacity = '0';
+        return;
+    }
+    hint.style.opacity = '1';
+    if(np === cp){
+        hint.textContent = '✓ Passwords match';
+        hint.style.color = '#059669';
+    } else {
+        hint.textContent = '✗ Passwords do not match';
+        hint.style.color = '#dc2626';
+    }
+}
+
+// Auto-dismiss alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function(){
+    var alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(el){
+        setTimeout(function(){
+            el.style.transition = 'opacity .4s, transform .4s';
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-8px)';
+            setTimeout(function(){ el.remove(); }, 400);
+        }, 5000);
+    });
+});
+</script>
 </body>
 </html>

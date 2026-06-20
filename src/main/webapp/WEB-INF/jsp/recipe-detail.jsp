@@ -54,11 +54,13 @@
         .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text-main);}
 
         .page-body{flex:1;padding:32px 24px;}
-        .container { max-width: 800px; margin: 0 auto; width: 100%; }
+        .container { max-width: 1000px; margin: 0 auto; width: 100%; }
 
-        .recipe-header { background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid var(--sidebar-border); margin-bottom: 24px; }
-        .recipe-image { width: 100%; height: 350px; object-fit: cover; }
-        .recipe-info { padding: 32px; }
+        .split-layout { display: flex; flex-direction: row; background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--sidebar-border); margin-bottom: 24px; }
+        .recipe-info { flex: 1; padding: 32px; display: flex; flex-direction: column; }
+        .recipe-image-container { width: 40%; min-width: 350px; }
+        .recipe-image-split { width: 100%; height: 100%; object-fit: cover; }
+
         .recipe-title { font-size: 28px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
         .recipe-tags { font-size: 14px; color: var(--primary); font-weight: 600; margin-bottom: 24px; }
 
@@ -66,11 +68,11 @@
         .macro-item span { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
         .macro-item strong { font-size: 20px; color: var(--primary-dark); }
 
-        .recipe-desc-box { background: #fff; padding: 32px; border-radius: var(--radius); border: 1px solid var(--sidebar-border); }
-        .desc-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
-        .desc-content { font-size: 15px; line-height: 1.6; color: var(--text-muted); white-space: pre-wrap; }
+        .recipe-desc-box-inner { flex: 1; padding: 20px 0; border-top: 1px solid var(--sidebar-border); margin-top: 8px; margin-bottom: 16px; }
+        .desc-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text-main); }
+        .desc-content { font-size: 14.5px; line-height: 1.6; color: var(--text-muted); white-space: pre-wrap; }
 
-        .action-row { margin-top: 24px; display: flex; gap: 12px; }
+        .action-row { display: flex; gap: 12px; margin-top: auto; }
         .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; text-align: center; cursor: pointer; border: none; font-size: 14px; transition: 0.15s;}
         .btn-log { background: var(--success, #10b981); color: #fff; flex: 1; }
         .btn-log:hover { background: #059669; }
@@ -78,6 +80,10 @@
         .btn-danger:hover { background: #ef4444; color: #fff; }
 
         .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;}
+        @media(max-width:900px) {
+            .split-layout { flex-direction: column-reverse; }
+            .recipe-image-container { width: 100%; height: 300px; }
+        }
         @media(max-width:768px){
             .sidebar{transform:translateX(-100%);}
             .sidebar.open{transform:translateX(0);}
@@ -85,7 +91,6 @@
             .main-content{margin-left:0;}
             .hamburger{display:flex;}
             .page-body{padding:16px;}
-            .recipe-image { height: 250px; }
             .recipe-info { padding: 20px; }
             .macro-grid { grid-template-columns: repeat(2, 1fr); }
         }
@@ -132,31 +137,47 @@
 
         <div class="page-body">
             <div class="container">
-                <div class="recipe-header">
-                    <img src="${recipe.imageUrl}" alt="Recipe Image" class="recipe-image">
+                <div class="split-layout">
                     <div class="recipe-info">
                         <h1 class="recipe-title">${recipe.title}</h1>
                         <p class="recipe-tags">${not empty recipe.tags ? recipe.tags : '#SahaayataRecipe'}</p>
 
-                        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;"><strong>Servings:</strong> ${recipe.servings}</p>
+                        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;"><strong>Recipe Total Servings:</strong> ${recipe.servings}</p>
 
                         <div class="macro-grid">
-                            <div class="macro-item"><span>Calories</span><strong>${recipe.calories}</strong></div>
-                            <div class="macro-item"><span>Protein</span><strong>${recipe.protein}g</strong></div>
-                            <div class="macro-item"><span>Carbs</span><strong>${recipe.carbs}g</strong></div>
-                            <div class="macro-item"><span>Fats</span><strong>${recipe.fats}g</strong></div>
+                            <div class="macro-item"><span>Calories</span><strong id="display-cal">${recipe.calories}</strong></div>
+                            <div class="macro-item"><span>Protein</span><strong id="display-pro">${recipe.protein}g</strong></div>
+                            <div class="macro-item"><span>Carbs</span><strong id="display-car">${recipe.carbs}g</strong></div>
+                            <div class="macro-item"><span>Fats</span><strong id="display-fat">${recipe.fats}g</strong></div>
+                        </div>
+
+                        <div class="recipe-desc-box-inner">
+                            <h3 class="desc-title">Description & Instructions</h3>
+                            <p class="desc-content">${recipe.description}</p>
                         </div>
 
                         <div class="action-row">
-                            <button class="btn btn-log" onclick="alert('Log feature coming soon!')">Log to Daily</button>
+                            <form action="/log-recipe" method="POST" style="display:flex; gap:12px; flex:1; flex-wrap:wrap; align-items:center;">
+                                <input type="hidden" name="recipeId" value="${recipe.id}">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label for="loggedServings" style="font-size: 14px; font-weight: 600; color: var(--text-main);">Servings to Log:</label>
+                                    <input type="number" id="loggedServings" name="loggedServings" value="${recipe.servings}" step="0.5" min="0.5" style="width: 70px; padding: 10px; border: 1px solid var(--sidebar-border); border-radius: 8px; font-family: var(--font); outline: none; font-size: 14px; color: var(--text-main);">
+                                </div>
+                                <select name="mealType" style="padding: 10px 14px; border: 1px solid var(--sidebar-border); border-radius: 8px; font-family: var(--font); outline: none; font-size: 14px; color: var(--text-main);">
+                                    <option value="Breakfast">Breakfast</option>
+                                    <option value="Lunch">Lunch</option>
+                                    <option value="Dinner">Dinner</option>
+                                    <option value="Snacks">Snacks</option>
+                                </select>
+                                <button type="submit" class="btn btn-log">Log to Daily</button>
+                            </form>
                             <a href="/delete-recipe?id=${recipe.id}" class="btn btn-danger" onclick="return confirm('Delete this recipe?')">Delete</a>
                         </div>
                     </div>
-                </div>
-
-                <div class="recipe-desc-box">
-                    <h3 class="desc-title">Description & Instructions</h3>
-                    <p class="desc-content">${recipe.description}</p>
+                    
+                    <div class="recipe-image-container">
+                        <img src="${recipe.imageUrl}" alt="Recipe Image" class="recipe-image-split">
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,6 +189,34 @@
         document.getElementById('sidebar').classList.toggle('open');
         document.getElementById('overlay').classList.toggle('show');
     }
+
+    // Dynamic Macros Calculation
+    document.addEventListener('DOMContentLoaded', () => {
+        const totalServings = ${not empty recipe.servings and recipe.servings > 0 ? recipe.servings : 1};
+        const baseCal = ${not empty recipe.calories ? recipe.calories : 0};
+        const basePro = ${not empty recipe.protein ? recipe.protein : 0};
+        const baseCar = ${not empty recipe.carbs ? recipe.carbs : 0};
+        const baseFat = ${not empty recipe.fats ? recipe.fats : 0};
+
+        const inputServings = document.getElementById('loggedServings');
+        const displayCal = document.getElementById('display-cal');
+        const displayPro = document.getElementById('display-pro');
+        const displayCar = document.getElementById('display-car');
+        const displayFat = document.getElementById('display-fat');
+
+        function updateMacros() {
+            let val = parseFloat(inputServings.value);
+            if(isNaN(val) || val <= 0) val = 0;
+            
+            const ratio = val / totalServings;
+            displayCal.innerText = (baseCal * ratio).toFixed(1);
+            displayPro.innerText = (basePro * ratio).toFixed(1) + 'g';
+            displayCar.innerText = (baseCar * ratio).toFixed(1) + 'g';
+            displayFat.innerText = (baseFat * ratio).toFixed(1) + 'g';
+        }
+
+        inputServings.addEventListener('input', updateMacros);
+    });
 </script>
 </body>
 </html>

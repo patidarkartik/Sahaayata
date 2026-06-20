@@ -4,7 +4,7 @@
 --%>
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" style="scroll-behavior: smooth;">
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -89,7 +89,7 @@
                 >
                 <a
                         class="text-sm font-medium text-background-dark/80 dark:text-background-light/80 hover:text-primary transition-colors"
-                        href="#"
+                        href="#features"
                 >Features</a
                 >
                 <a
@@ -165,7 +165,7 @@
                 </div>
             </div>
         </section>
-        <section
+        <section id="features"
                 class="py-16 md:py-24 bg-background-light/50 dark:bg-background-dark/50"
         >
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">

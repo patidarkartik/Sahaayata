@@ -37,6 +37,18 @@
 
     Integer fatAttr = (Integer) request.getAttribute("consumedFats");
     int consumedFats = (fatAttr != null) ? fatAttr : 0;
+
+    Integer bCalsAttr = (Integer) request.getAttribute("breakfastCals");
+    int breakfastCals = (bCalsAttr != null) ? bCalsAttr : 0;
+
+    Integer lCalsAttr = (Integer) request.getAttribute("lunchCals");
+    int lunchCals = (lCalsAttr != null) ? lCalsAttr : 0;
+
+    Integer dCalsAttr = (Integer) request.getAttribute("dinnerCals");
+    int dinnerCals = (dCalsAttr != null) ? dCalsAttr : 0;
+
+    Integer sCalsAttr = (Integer) request.getAttribute("snacksCals");
+    int snacksCals = (sCalsAttr != null) ? sCalsAttr : 0;
     // ------------------------------------------------
 
     int remaining = tdee - consumed; // Ab ye dynamic h
@@ -754,7 +766,7 @@
                     <div style="margin-top: 16px;">
                         <div class="meal-item">
                             <div><p class="meal-name">Breakfast</p>
-                                <p class="meal-cal">0 kcal logged</p></div>
+                                <p class="meal-cal"><%= breakfastCals %> kcal logged</p></div>
                             <button class="btn-add" id="btn-add-breakfast"
                                     onclick="window.location.href='/log-meal?meal=Breakfast&filter=High%20Protein'">+
                                 Add
@@ -762,21 +774,21 @@
                         </div>
                         <div class="meal-item">
                             <div><p class="meal-name">Lunch</p>
-                                <p class="meal-cal">0 kcal logged</p></div>
+                                <p class="meal-cal"><%= lunchCals %> kcal logged</p></div>
                             <button class="btn-add" id="btn-add-lunch"
                                     onclick="window.location.href='/log-meal?meal=Lunch&filter=High%20Protein'">+ Add
                             </button>
                         </div>
                         <div class="meal-item">
                             <div><p class="meal-name">Dinner</p>
-                                <p class="meal-cal">0 kcal logged</p></div>
+                                <p class="meal-cal"><%= dinnerCals %> kcal logged</p></div>
                             <button class="btn-add" id="btn-add-dinner"
                                     onclick="window.location.href='/log-meal?meal=Dinner&filter=High%20Protein'">+ Add
                             </button>
                         </div>
                         <div class="meal-item">
                             <div><p class="meal-name">Snacks</p>
-                                <p class="meal-cal">0 kcal logged</p></div>
+                                <p class="meal-cal"><%= snacksCals %> kcal logged</p></div>
                             <button class="btn-add" id="btn-add-snacks"
                                     onclick="window.location.href='/log-meal?meal=Snacks&filter=High%20Protein'">+ Add
                             </button>

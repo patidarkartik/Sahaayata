@@ -12,6 +12,8 @@ import java.util.List;
 public interface FoodRepository extends JpaRepository<Food, Long> {
 
     List<Food> findByFoodNameContainingIgnoreCase(String name);
+    
+    Food findFirstByFoodName(String foodName);
 
     // Ye recommended_for column check karega (as per food1.sql)
     @Query(value = "SELECT * FROM foods WHERE category IN (:categories) AND recommended_for IN (:recommended)", nativeQuery = true)

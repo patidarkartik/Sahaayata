@@ -181,7 +181,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Number of Servings</label>
-                        <input type="number" name="servings" class="form-input" value="1" min="0.5" step="0.5" placeholder="e.g., 2" required />
+                        <input type="number" name="servings" id="input-servings" class="form-input" value="1" min="0" step="0.5" placeholder="e.g., 2" readonly required />
                     </div>
 
                     <div class="ai-box">
@@ -246,6 +246,28 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const descInput = document.getElementById('recipe-desc');
+        if (descInput) {
+            descInput.addEventListener('input', function() {
+                if (this.value.trim() === '') {
+                    document.getElementById('input-cal').value = 0;
+                    document.getElementById('input-pro').value = 0;
+                    document.getElementById('input-carb').value = 0;
+                    document.getElementById('input-fat').value = 0;
+                    document.getElementById('input-servings').value = 0;
+                    
+                    const statusEl = document.getElementById('ai-status');
+                    if (statusEl) {
+                        statusEl.style.display = 'none';
+                        const btn = document.getElementById('btn-ai-calc');
+                        if (btn) btn.innerText = "Analyze Macros";
+                    }
+                }
+            });
+        }
+    });
+
     function toggleSidebar(){
         document.getElementById('sidebar').classList.toggle('open');
         document.getElementById('overlay').classList.toggle('show');
@@ -290,6 +312,7 @@
                 document.getElementById('input-pro').value = data.protein || 0;
                 document.getElementById('input-carb').value = data.carbs || 0;
                 document.getElementById('input-fat').value = data.fats || 0;
+                document.getElementById('input-servings').value = data.servings || 0;
 
                 statusEl.innerText = "✅ Macros calculated successfully!";
                 statusEl.style.color = "var(--success)";

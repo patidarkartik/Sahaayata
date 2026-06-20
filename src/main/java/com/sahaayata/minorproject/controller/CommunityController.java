@@ -38,6 +38,9 @@ public class CommunityController {
         List<CommunityPostDTO> recipesList = communityService.getAllCommunityPosts();
         model.addAttribute("communityRecipes", recipesList);
 
+        List<com.sahaayata.minorproject.dto.TopContributorDTO> topContributors = communityService.getTopContributors();
+        model.addAttribute("topContributors", topContributors);
+
         return "community";
     }
 
@@ -58,5 +61,60 @@ public class CommunityController {
 
         // Share hone ke baad seedha community timeline par bhej denge
         return "redirect:/community";
+    }
+
+    @Autowired
+    private com.sahaayata.minorproject.repository.CommunityPostRepository communityPostRepository;
+
+    @Autowired
+    private com.sahaayata.minorproject.repository.PostCommentRepository postCommentRepository;
+
+    // ==========================================
+    // 3. LIKE POST
+    // ==========================================
+    @PostMapping("/like-post")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public java.util.Map<String, Object> likePost(@RequestParam("postId") Long postId) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        com.sahaayata.minorproject.model.CommunityPost post = communityPostRepository.findById(postId).orElse(null);
+        if(post != null) {
+            post.setLikesCount(post.getLikesCount() + 1);
+            communityPostRepository.save(post);
+            response.put("success", true);
+            response.put("likes", post.getLikesCount());
+        } else {
+            response.put("success", false);
+        }
+        return response;
+    }
+
+    // ==========================================
+    // 4. ADD COMMENT
+    // ==========================================
+    @PostMapping("/add-comment")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public java.util.Map<String, Object> addComment(@RequestParam("postId") Long postId, @RequestParam("text") String text, HttpSession session) {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
+        if (user == null) {
+            response.put("success", false);
+            return response;
+        }
+
+        com.sahaayata.minorproject.model.CommunityPost post = communityPostRepository.findById(postId).orElse(null);
+        if(post != null && text != null && !text.trim().isEmpty()) {
+            com.sahaayata.minorproject.model.PostComment comment = new com.sahaayata.minorproject.model.PostComment();
+            comment.setPost(post);
+            comment.setUser(user);
+            comment.setCommentText(text.trim());
+            postCommentRepository.save(comment);
+
+            response.put("success", true);
+            response.put("author", user.getUsername());
+            response.put("text", comment.getCommentText());
+        } else {
+            response.put("success", false);
+        }
+        return response;
     }
 }

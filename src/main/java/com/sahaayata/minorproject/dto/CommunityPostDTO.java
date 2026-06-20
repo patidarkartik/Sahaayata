@@ -3,6 +3,7 @@ package com.sahaayata.minorproject.dto;
 import java.util.List;
 
 public class CommunityPostDTO {
+    private Long id;
     private String authorName;
     private String postedDate;
     private String name;
@@ -10,8 +11,12 @@ public class CommunityPostDTO {
     private int likes;
     private List<String> tags;
     private String imageUrl; // Naya image URL field
+    private List<String> comments;
 
     public CommunityPostDTO() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getAuthorName() { return authorName; }
     public void setAuthorName(String authorName) { this.authorName = authorName; }
@@ -33,4 +38,7 @@ public class CommunityPostDTO {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public List<String> getComments() { return comments; }
+    public void setComments(List<String> comments) { this.comments = comments; }
 }

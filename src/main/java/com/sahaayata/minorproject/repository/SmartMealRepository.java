@@ -15,4 +15,10 @@ public interface SmartMealRepository extends JpaRepository<SmartMeal, Long> {
 
     @Query(value = "SELECT * FROM smart_meals WHERE category IN (:categories) ORDER BY RAND() LIMIT 1", nativeQuery = true)
     SmartMeal getFallbackMeal(@Param("categories") List<String> categories);
+
+    @Query(value = "SELECT * FROM smart_meals WHERE smart_filter = :filter AND category IN (:categories) ORDER BY RAND()", nativeQuery = true)
+    List<SmartMeal> getFilteredMeals(@Param("filter") String filter, @Param("categories") List<String> categories);
+
+    @Query(value = "SELECT * FROM smart_meals WHERE category IN (:categories) ORDER BY RAND()", nativeQuery = true)
+    List<SmartMeal> getFallbackMeals(@Param("categories") List<String> categories);
 }
