@@ -12,9 +12,16 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Community — Sahaayata</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=DM+Sans:wght@600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <style>
-        :root{--primary:#4F6FEB;--primary-light:#EEF1FD;--primary-dark:#3451C7;--sidebar-width:240px;--sidebar-bg:#fff;--sidebar-border:#E8EAED;--text-main:#1a1d23;--text-muted:#6b7280;--text-light:#9ca3af;--bg-page:#F4F6FB;--bg-card:#fff;--nav-hover:#F4F6FB;--nav-active-bg:#EEF1FD;--nav-active-text:#4F6FEB;--radius:10px;--font:'DM Sans',system-ui,sans-serif;}
+        .ai-gradient-text {
+            background: linear-gradient(135deg, #0058be 0%, #006c49 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        :root{--primary:#0058be;--primary-light:#d8e2ff;--primary-dark:#004395;--sidebar-width:240px;--sidebar-bg:#f8fafc;--sidebar-border:rgba(194, 198, 214, 0.3);--text-main:#131b2e;--text-muted:#424754;--text-light:#727785;--bg-page:#faf8ff;--bg-card:#ffffff;--nav-hover:#f2f3ff;--nav-active-bg:#d8e2ff;--nav-active-text:#0058be;--radius:12px;--font:'Inter',system-ui,sans-serif;}
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:var(--font);background:var(--bg-page);color:var(--text-main);min-height:100vh;}
         .app-layout{display:flex;min-height:100vh;}
@@ -39,7 +46,7 @@
         /* community */
         .community-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;}
         .recipe-feed{display:flex;flex-direction:column;gap:12px;}
-        .feed-card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);overflow:hidden;}
+        .feed-card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);overflow:hidden; box-shadow: 0px 4px 16px rgba(15, 23, 42, 0.03);}
         .feed-header{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--sidebar-border);}
         .feed-avatar{width:36px;height:36px;border-radius:50%;}
         .feed-user{font-size:13.5px;font-weight:600;}
@@ -55,11 +62,11 @@
 
         /* Side-by-Side Image Layout CSS */
         .feed-content-wrapper { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; }
-        .feed-text-area { flex: 1; min-width: 0; white-space: pre-wrap; }
+        .feed-text-area { flex: 1; min-width: 0; }
         .feed-post-img { width: 130px; height: 130px; object-fit: cover; border-radius: 8px; border: 1px solid var(--sidebar-border); flex-shrink: 0; background-color: var(--bg-page); }
 
         .sidebar-right{display:flex;flex-direction:column;gap:12px;align-self:start;position:sticky;top:72px;}
-        .card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);padding:16px;}
+        .card{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);padding:16px; box-shadow: 0px 4px 16px rgba(15, 23, 42, 0.03);}
         .card-title{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;}
         .top-user{display:flex;align-items:center;gap:10px;padding:6px 0;}
         .top-avatar{width:32px;height:32px;border-radius:50%;}
@@ -78,12 +85,12 @@
 <body>
 <div class="app-layout">
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
-            <span class="brand-name">Sahaayata</span>
+        <div class="sidebar-brand" style="gap: 0px;">
+            <img src="/images/logo.svg" alt="Sahaayata Logo" style="height: 48px; width: auto; object-fit: contain; margin-left: -8px;">
+            <span class="brand-name ai-gradient-text" style="font-family: 'DM Sans', sans-serif; font-size: 24px; margin-left: -4px;">Sahaayata</span>
         </div>
         <div class="sidebar-user">
-            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
+            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=0058be&color=fff&size=80" alt="avatar"/>
             <div><p class="user-name"><%= user.getUsername() %></p><p class="user-role">Member</p></div>
         </div>
         <nav class="sidebar-nav">
@@ -115,7 +122,7 @@
                             <c:forEach var="r" items="${communityRecipes}">
                                 <div class="feed-card">
                                     <div class="feed-header">
-                                        <img class="feed-avatar" src="https://ui-avatars.com/api/?name=${r.authorName}&background=4F6FEB&color=fff&size=72" alt="avatar"/>
+                                        <img class="feed-avatar" src="https://ui-avatars.com/api/?name=${r.authorName}&background=0058be&color=fff&size=72" alt="avatar"/>
                                         <div>
                                             <p class="feed-user">${r.authorName}</p>
                                             <p class="feed-time">${r.postedDate}</p>
@@ -172,7 +179,7 @@
                         </c:when>
                         <c:otherwise>
                             <div style="text-align:center;padding:60px 20px;color:var(--text-light);">
-                                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#4F6FEB" stroke-width="1" style="opacity:.25;margin:0 auto 14px;display:block;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#0058be" stroke-width="1" style="opacity:.25;margin:0 auto 14px;display:block;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
                                 <p style="font-size:15px;font-weight:500;color:var(--text-muted);margin-bottom:4px;">No community posts yet</p>
                                 <p style="font-size:13px;">Be the first to share a recipe!</p>
                             </div>

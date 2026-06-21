@@ -20,16 +20,23 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Create Recipe — Sahaayata</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=DM+Sans:wght@600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <style>
+        .ai-gradient-text {
+            background: linear-gradient(135deg, #0058be 0%, #006c49 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         :root {
-            --primary: #4F6FEB; --primary-light: #EEF1FD; --primary-dark: #3451C7;
-            --sidebar-width: 240px; --sidebar-bg: #fff; --sidebar-border: #E8EAED;
-            --text-main: #1a1d23; --text-muted: #6b7280; --text-light: #9ca3af;
-            --bg-page: #F4F6FB; --bg-card: #fff;
-            --nav-hover: #F4F6FB; --nav-active-bg: #EEF1FD; --nav-active-text: #4F6FEB;
+            --primary: #0058be; --primary-light: #d8e2ff; --primary-dark: #004395;
+            --sidebar-width: 240px; --sidebar-bg: #f8fafc; --sidebar-border: rgba(194, 198, 214, 0.3);
+            --text-main: #131b2e; --text-muted: #424754; --text-light: #727785;
+            --bg-page: #faf8ff; --bg-card: #ffffff;
+            --nav-hover: #f2f3ff; --nav-active-bg: #d8e2ff; --nav-active-text: #0058be;
             --success: #10b981; --danger: #ef4444;
-            --radius: 10px; --font: 'DM Sans', system-ui, sans-serif;
+            --radius: 12px; --font: 'Inter', system-ui, sans-serif;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: var(--font); background: var(--bg-page); color: var(--text-main); min-height: 100vh; }
@@ -59,21 +66,21 @@
         .hamburger { display: none; background: none; border: none; cursor: pointer; color: var(--text-main); }
         .page-body { flex: 1; padding: 24px; display: flex; justify-content: center; align-items: flex-start; }
 
-        .form-card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .form-card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 600px; box-shadow: 0px 4px 16px rgba(15, 23, 42, 0.03); }
         .form-card-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
         .form-card-sub { font-size: 13.5px; color: var(--text-light); margin-bottom: 28px; }
 
         .form-group { margin-bottom: 20px; }
         .form-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .04em; }
-        .form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--sidebar-border); border-radius: 8px; font-size: 14.5px; font-family: var(--font); color: var(--text-main); background: #fff; outline: none; transition: border-color .15s; }
+        .form-input { width: 100%; padding: 10px 16px; border: 1px solid var(--sidebar-border); border-radius: 99px !important; font-size: 14.5px; font-family: var(--font); color: var(--text-main); background: #fff; outline: none; transition: border-color .15s; }
         .form-input:focus { border-color: var(--primary); }
-        textarea.form-input { resize: vertical; min-height: 120px; }
+        textarea.form-input { resize: vertical; min-height: 120px; border-radius: 16px !important; }
 
         .form-actions { display: flex; gap: 12px; margin-top: 32px; }
-        .btn-primary { background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; text-align: center; flex: 1; }
-        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary { background: linear-gradient(135deg, #0058be 0%, #004395 100%); color: #fff; border: none; padding: 10px 20px; border-radius: 99px !important; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s; text-align: center; flex: 1; box-shadow: 0 4px 12px rgba(0, 88, 190, 0.2); }
+        .btn-primary:hover { box-shadow: 0 6px 16px rgba(0, 88, 190, 0.3); transform: translateY(-1px); }
         .btn-primary:disabled { background: var(--text-light); cursor: not-allowed; }
-        .btn-secondary { background: var(--bg-page); color: var(--text-muted); border: 1px solid var(--sidebar-border); padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .15s; text-align: center; }
+        .btn-secondary { background: var(--bg-page); color: var(--text-muted); border: 1px solid var(--sidebar-border); padding: 10px 20px; border-radius: 99px !important; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .15s; text-align: center; }
         .btn-secondary:hover { background: #E8EAED; color: var(--text-main); }
 
         .ai-box { background: var(--primary-light); padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed var(--primary); }
@@ -109,12 +116,12 @@
 <div class="app-layout">
 
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
-            <span class="brand-name">Sahaayata</span>
+        <div class="sidebar-brand" style="gap: 0px;">
+            <img src="/images/logo.svg" alt="Sahaayata Logo" style="height: 48px; width: auto; object-fit: contain; margin-left: -8px;">
+            <span class="brand-name ai-gradient-text" style="font-family: 'DM Sans', sans-serif; font-size: 24px; margin-left: -4px;">Sahaayata</span>
         </div>
         <div class="sidebar-user">
-            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
+            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=0058be&color=fff&size=80" alt="avatar"/>
             <div><p class="user-name"><%= user.getUsername() %></p><p class="user-role">Member</p></div>
         </div>
         <nav class="sidebar-nav">

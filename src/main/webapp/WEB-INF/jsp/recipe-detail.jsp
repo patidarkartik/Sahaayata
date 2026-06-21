@@ -13,15 +13,22 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>${recipe.title} — Sahaayata</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=DM+Sans:wght@600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <style>
+        .ai-gradient-text {
+            background: linear-gradient(135deg, #0058be 0%, #006c49 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         :root {
-            --primary:#4F6FEB;--primary-light:#EEF1FD;--primary-dark:#3451C7;
-            --sidebar-width:240px;--sidebar-bg:#fff;--sidebar-border:#E8EAED;
-            --text-main:#1a1d23;--text-muted:#6b7280;--text-light:#9ca3af;
-            --bg-page:#F4F6FB;--bg-card:#fff;--nav-hover:#F4F6FB;
-            --nav-active-bg:#EEF1FD;--nav-active-text:#4F6FEB;
-            --radius:10px;--font:'DM Sans',system-ui,sans-serif;
+            --primary:#0058be;--primary-light:#d8e2ff;--primary-dark:#004395;
+            --sidebar-width:240px;--sidebar-bg:#f8fafc;--sidebar-border:rgba(194, 198, 214, 0.3);
+            --text-main:#131b2e;--text-muted:#424754;--text-light:#727785;
+            --bg-page:#faf8ff;--bg-card:#ffffff;--nav-hover:#f2f3ff;
+            --nav-active-bg:#d8e2ff;--nav-active-text:#0058be;
+            --radius:12px;--font:'Inter',system-ui,sans-serif;
         }
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:var(--font);background:var(--bg-page);color:var(--text-main);min-height:100vh;}
@@ -53,13 +60,13 @@
         .back-btn:hover { color: var(--primary); }
         .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text-main);}
 
-        .page-body{flex:1;padding:32px 24px;}
-        .container { max-width: 1000px; margin: 0 auto; width: 100%; }
+        .page-body{flex:1;padding:32px 24px; display: flex; flex-direction: column; height: calc(100vh - 56px); overflow: hidden; }
+        .container { max-width: 1000px; margin: 0 auto; width: 100%; height: 100%; display: flex; flex-direction: column; }
 
-        .split-layout { display: flex; flex-direction: row; background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--sidebar-border); margin-bottom: 24px; }
-        .recipe-info { flex: 1; padding: 32px; display: flex; flex-direction: column; }
-        .recipe-image-container { width: 40%; min-width: 350px; }
-        .recipe-image-split { width: 100%; height: 100%; object-fit: cover; }
+        .split-layout { display: flex; flex-direction: row; background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--sidebar-border); flex: 1; margin-bottom: 0; }
+        .recipe-info { flex: 1; padding: 32px; display: flex; flex-direction: column; overflow-y: auto; }
+        .recipe-image-container { width: 45%; min-width: 350px; position: relative; }
+        .recipe-image-split { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 
         .recipe-title { font-size: 28px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
         .recipe-tags { font-size: 14px; color: var(--primary); font-weight: 600; margin-bottom: 24px; }
@@ -73,16 +80,18 @@
         .desc-content { font-size: 14.5px; line-height: 1.6; color: var(--text-muted); white-space: pre-wrap; }
 
         .action-row { display: flex; gap: 12px; margin-top: auto; }
-        .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; text-align: center; cursor: pointer; border: none; font-size: 14px; transition: 0.15s;}
-        .btn-log { background: var(--success, #10b981); color: #fff; flex: 1; }
-        .btn-log:hover { background: #059669; }
+        .btn { padding: 12px 24px; border-radius: 99px !important; font-weight: 600; text-decoration: none; text-align: center; cursor: pointer; border: none; font-size: 14px; transition: all 0.2s ease;}
+        .btn-log { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; flex: 1; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .btn-log:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3); }
         .btn-danger { background: #FEF2F2; color: #ef4444; border: 1px solid #FCA5A5; }
-        .btn-danger:hover { background: #ef4444; color: #fff; }
+        .btn-danger:hover { background: #ef4444; color: #fff; transform: translateY(-1px); }
 
         .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;}
         @media(max-width:900px) {
-            .split-layout { flex-direction: column-reverse; }
-            .recipe-image-container { width: 100%; height: 300px; }
+            .page-body { height: auto; overflow: visible; }
+            .split-layout { flex-direction: column-reverse; flex: none; height: auto; margin-bottom: 24px; }
+            .recipe-info { overflow-y: visible; }
+            .recipe-image-container { width: 100%; height: 300px; position: relative; }
         }
         @media(max-width:768px){
             .sidebar{transform:translateX(-100%);}
@@ -100,12 +109,12 @@
 <div class="app-layout">
 
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
-            <span class="brand-name">Sahaayata</span>
+        <div class="sidebar-brand" style="gap: 0px;">
+            <img src="/images/logo.svg" alt="Sahaayata Logo" style="height: 48px; width: auto; object-fit: contain; margin-left: -8px;">
+            <span class="brand-name ai-gradient-text" style="font-family: 'DM Sans', sans-serif; font-size: 24px; margin-left: -4px;">Sahaayata</span>
         </div>
         <div class="sidebar-user">
-            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
+            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=0058be&color=fff&size=80" alt="avatar"/>
             <div><p class="user-name"><%= user.getUsername() %></p><p class="user-role">Member</p></div>
         </div>
         <nav class="sidebar-nav">
@@ -160,10 +169,10 @@
                             <form action="/log-recipe" method="POST" style="display:flex; gap:12px; flex:1; flex-wrap:wrap; align-items:center;">
                                 <input type="hidden" name="recipeId" value="${recipe.id}">
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <label for="loggedServings" style="font-size: 14px; font-weight: 600; color: var(--text-main);">Servings to Log:</label>
-                                    <input type="number" id="loggedServings" name="loggedServings" value="${recipe.servings}" step="0.5" min="0.5" style="width: 70px; padding: 10px; border: 1px solid var(--sidebar-border); border-radius: 8px; font-family: var(--font); outline: none; font-size: 14px; color: var(--text-main);">
+                                    <label for="loggedServings" style="font-size: 14.5px; font-weight: 600; color: var(--text-main);">Servings to Log:</label>
+                                    <input type="number" id="loggedServings" name="loggedServings" value="${recipe.servings}" step="0.5" min="0.5" style="width: 80px; padding: 10px 20px; border: 1px solid var(--sidebar-border); border-radius: 99px !important; font-family: var(--font); outline: none; font-size: 14.5px; color: var(--text-main);">
                                 </div>
-                                <select name="mealType" style="padding: 10px 14px; border: 1px solid var(--sidebar-border); border-radius: 8px; font-family: var(--font); outline: none; font-size: 14px; color: var(--text-main);">
+                                <select name="mealType" style="padding: 10px 40px 10px 20px; border: 1px solid var(--sidebar-border); border-radius: 99px !important; font-family: var(--font); outline: none; font-size: 14.5px; color: var(--text-main); cursor: pointer;">
                                     <option value="Breakfast">Breakfast</option>
                                     <option value="Lunch">Lunch</option>
                                     <option value="Dinner">Dinner</option>

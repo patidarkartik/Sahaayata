@@ -12,9 +12,16 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>My Recipes — Sahaayata</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=DM+Sans:wght@600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <style>
-        :root{--primary:#4F6FEB;--primary-light:#EEF1FD;--primary-dark:#3451C7;--sidebar-width:240px;--sidebar-bg:#fff;--sidebar-border:#E8EAED;--text-main:#1a1d23;--text-muted:#6b7280;--text-light:#9ca3af;--bg-page:#F4F6FB;--bg-card:#fff;--nav-hover:#F4F6FB;--nav-active-bg:#EEF1FD;--nav-active-text:#4F6FEB;--radius:10px;--font:'DM Sans',system-ui,sans-serif;}
+        .ai-gradient-text {
+            background: linear-gradient(135deg, #0058be 0%, #006c49 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        :root{--primary:#0058be;--primary-light:#d8e2ff;--primary-dark:#004395;--sidebar-width:240px;--sidebar-bg:#f8fafc;--sidebar-border:rgba(194, 198, 214, 0.3);--text-main:#131b2e;--text-muted:#424754;--text-light:#727785;--bg-page:#faf8ff;--bg-card:#ffffff;--nav-hover:#f2f3ff;--nav-active-bg:#d8e2ff;--nav-active-text:#0058be;--radius:12px;--font:'Inter',system-ui,sans-serif;}
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:var(--font);background:var(--bg-page);color:var(--text-main);min-height:100vh;}
         .app-layout{display:flex;min-height:100vh;}
@@ -44,8 +51,8 @@
 
         /* Custom Styles for My Recipes Grid */
         .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .recipe-card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
-        .recipe-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .recipe-card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0px 4px 16px rgba(15, 23, 42, 0.03); }
+        .recipe-card:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); }
         .recipe-img { width: 100%; height: 180px; object-fit: cover; border-bottom: 1px solid var(--sidebar-border); }
         .recipe-body { padding: 16px; flex: 1; }
         .recipe-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
@@ -56,9 +63,9 @@
         .macro-badge span { color: var(--text-main); font-weight: 700; }
 
         .recipe-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--sidebar-border); background: #fafafa; flex-wrap: wrap; gap: 10px; }
-        .btn-action { text-decoration: none; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; }
-        .btn-view { color: var(--primary); background: var(--primary-light); }
-        .btn-view:hover { background: #dbe2fb; }
+        .btn-action { text-decoration: none; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+        .btn-view { color: #fff; background: linear-gradient(135deg, #0058be 0%, #004395 100%); box-shadow: 0 4px 12px rgba(0, 88, 190, 0.2); }
+        .btn-view:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 88, 190, 0.3); }
         .btn-delete { color: #dc2626; background: #FEE2E2; }
         .btn-delete:hover { background: #fecaca; }
         .btn-share { color: #059669; background: #D1FAE5; }
@@ -78,12 +85,12 @@
 <body>
 <div class="app-layout">
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
-            <span class="brand-name">Sahaayata</span>
+        <div class="sidebar-brand" style="gap: 0px;">
+            <img src="/images/logo.svg" alt="Sahaayata Logo" style="height: 48px; width: auto; object-fit: contain; margin-left: -8px;">
+            <span class="brand-name ai-gradient-text" style="font-family: 'DM Sans', sans-serif; font-size: 24px; margin-left: -4px;">Sahaayata</span>
         </div>
         <div class="sidebar-user">
-            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
+            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=0058be&color=fff&size=80" alt="avatar"/>
             <div><p class="user-name"><%= user.getUsername() %></p><p class="user-role">Member</p></div>
         </div>
         <nav class="sidebar-nav">

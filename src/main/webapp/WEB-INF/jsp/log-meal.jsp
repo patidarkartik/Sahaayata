@@ -22,15 +22,22 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Add Today's Meal — Sahaayata</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=DM+Sans:wght@600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <style>
+        .ai-gradient-text {
+            background: linear-gradient(135deg, #0058be 0%, #006c49 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         :root {
-            --primary: #4F6FEB; --primary-light: #EEF1FD; --primary-dark: #3451C7;
-            --sidebar-width: 240px; --sidebar-bg: #fff; --sidebar-border: #E8EAED;
-            --text-main: #1a1d23; --text-muted: #6b7280; --text-light: #9ca3af;
-            --bg-page: #F4F6FB; --bg-card: #fff;
-            --nav-hover: #F4F6FB; --nav-active-bg: #EEF1FD; --nav-active-text: #4F6FEB;
-            --radius: 10px; --font: 'DM Sans', system-ui, sans-serif;
+            --primary: #0058be; --primary-light: #d8e2ff; --primary-dark: #004395;
+            --sidebar-width: 240px; --sidebar-bg: #f8fafc; --sidebar-border: rgba(194, 198, 214, 0.3);
+            --text-main: #131b2e; --text-muted: #424754; --text-light: #727785;
+            --bg-page: #faf8ff; --bg-card: #ffffff;
+            --nav-hover: #f2f3ff; --nav-active-bg: #d8e2ff; --nav-active-text: #0058be;
+            --radius: 12px; --font: 'Inter', system-ui, sans-serif;
             --danger: #ef4444; --success: #10b981; --warning: #f59e0b;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,16 +64,16 @@
         .topbar { background: var(--bg-card); border-bottom: 1px solid var(--sidebar-border); padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 50; }
         .topbar-title { font-size: 16px; font-weight: 600; }
         .hamburger { display: none; background: none; border: none; cursor: pointer; color: var(--text-main); }
-        .page-body { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 24px; max-width: 1200px; margin: 0 auto; width: 100%; }
-        .card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+        .page-body { flex: 1; padding: 16px 24px; display: flex; flex-direction: column; gap: 16px; max-width: 1200px; margin: 0 auto; width: 100%; }
+        .card { background: var(--bg-card); border: 1px solid var(--sidebar-border); border-radius: var(--radius); padding: 20px; box-shadow: 0px 4px 16px rgba(15, 23, 42, 0.03); }
+        .section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
         .input-group { position: relative; width: 100%; }
-        .form-input { width: 100%; padding: 11px 16px; border: 1px solid var(--sidebar-border); border-radius: 8px; font-size: 14.5px; font-family: var(--font); color: var(--text-main); background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
+        .form-input { width: 100%; padding: 9px 16px; border: 1px solid var(--sidebar-border); border-radius: 99px !important; font-size: 13.5px; font-family: var(--font); color: var(--text-main); background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
         .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        .btn { border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s, transform .1s; font-family: var(--font); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { border: none; padding: 9px 16px; border-radius: 99px !important; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .15s, transform .1s; font-family: var(--font); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--primary); color: #fff; }
-        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary { background: linear-gradient(135deg, #0058be 0%, #004395 100%); color: #fff; box-shadow: 0 4px 12px rgba(0, 88, 190, 0.2); }
+        .btn-primary:hover { box-shadow: 0 6px 16px rgba(0, 88, 190, 0.3); transform: translateY(-1px); }
         .btn-success { background: var(--success); color: #fff; }
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-secondary { background: var(--bg-page); color: var(--text-muted); border: 1px solid var(--sidebar-border); }
@@ -99,34 +106,34 @@
         @media(max-width:768px){ .sidebar{transform:translateX(-100%);} .sidebar.open{transform:translateX(0);} .sidebar-overlay.show{display:block;} .main-content{margin-left:0;} .hamburger{display:flex;} .page-body{padding:16px;} .serving-control{flex-direction:column;align-items:stretch;} }
         
         /* New Grid Layout CSS */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
         @media(max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
-        .scanner-area { border: 2px dashed var(--sidebar-border); border-radius: var(--radius); padding: 40px 20px; text-align: center; cursor: pointer; background: var(--bg-page); transition: all 0.2s; }
+        .scanner-area { border: 2px dashed var(--sidebar-border); border-radius: var(--radius); padding: 24px 20px; text-align: center; cursor: pointer; background: var(--bg-page); transition: all 0.2s; }
         .scanner-area:hover { border-color: var(--primary); background: var(--primary-light); }
         .scanner-icon { color: var(--primary); margin-bottom: 12px; }
         .scanner-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
         .scanner-subtitle { font-size: 13px; color: var(--text-muted); }
-        .visualizer-container { background: var(--bg-page); border-radius: var(--radius); min-height: 250px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        .visualizer-container img { max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; }
+        .visualizer-container { background: var(--bg-page); border-radius: var(--radius); min-height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .visualizer-container img { max-width: 100%; max-height: 280px; object-fit: contain; border-radius: 8px; }
         .scan-badge { position: absolute; top: 10px; right: 10px; background: var(--primary); color: white; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .macro-bar-item { margin-bottom: 16px; }
+        .macro-bar-item { margin-bottom: 12px; }
         .macro-header { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
         .macro-bar-track { height: 8px; background: var(--sidebar-border); border-radius: 4px; overflow: hidden; }
         .macro-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
         .fill-protein { background: var(--primary); }
         .fill-carbs { background: var(--warning); }
         .fill-fat { background: var(--danger); }
-        .calorie-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid var(--primary-light); border-top-color: var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; transition: all 0.3s; }
-        .calorie-val { font-size: 32px; font-weight: 800; color: var(--text-main); line-height: 1; transition: color 0.3s; }
-        .calorie-label { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 4px; }
-        .plate-item { background: var(--bg-page); border: 1px solid var(--sidebar-border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+        .calorie-circle { width: 120px; height: 120px; border-radius: 50%; border: 8px solid var(--primary-light); border-top-color: var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 16px; transition: all 0.3s; }
+        .calorie-val { font-size: 28px; font-weight: 800; color: var(--text-main); line-height: 1; transition: color 0.3s; }
+        .calorie-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 4px; }
+        .plate-item { background: var(--bg-page); border: 1px solid var(--sidebar-border); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
         .plate-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .plate-item-cal { font-size: 12px; color: var(--text-muted); font-weight: 600; }
         .plate-item-controls { display: flex; align-items: center; gap: 12px; }
         .range-slider { flex: 1; accent-color: var(--primary); }
         .btn-remove { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; opacity: 0.7; transition: opacity 0.2s; }
         .btn-remove:hover { opacity: 1; }
-        #food-adjuster-items { max-height: 280px; overflow-y: auto; padding-right: 8px; margin-bottom: 8px; }
+        #food-adjuster-items { max-height: 220px; overflow-y: auto; padding-right: 8px; margin-bottom: 8px; }
         #food-adjuster-items::-webkit-scrollbar { width: 6px; }
         #food-adjuster-items::-webkit-scrollbar-track { background: var(--bg-page); border-radius: 4px; }
         #food-adjuster-items::-webkit-scrollbar-thumb { background: var(--sidebar-border); border-radius: 4px; }
@@ -143,12 +150,12 @@
 <div class="app-layout">
 
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
-            <span class="brand-name">Sahaayata</span>
+        <div class="sidebar-brand" style="gap: 0px;">
+            <img src="/images/logo.svg" alt="Sahaayata Logo" style="height: 48px; width: auto; object-fit: contain; margin-left: -8px;">
+            <span class="brand-name ai-gradient-text" style="font-family: 'DM Sans', sans-serif; font-size: 24px; margin-left: -4px;">Sahaayata</span>
         </div>
         <div class="sidebar-user">
-            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
+            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=0058be&color=fff&size=80" alt="avatar"/>
             <div><p class="user-name"><%= user.getUsername() %></p><p class="user-role">Member</p></div>
         </div>
         <nav class="sidebar-nav">

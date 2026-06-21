@@ -62,28 +62,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Dashboard — Sahaayata</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Dashboard | Sahaayata</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=DM+Sans:wght@600;700&display=swap" rel="stylesheet"/>
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <!-- Tailwind CSS (for partial usage and consistency) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <style>
+        .ai-gradient-text {
+            background: linear-gradient(135deg, #0058be 0%, #006c49 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         :root {
-            --primary: #4F6FEB;
-            --primary-light: #EEF1FD;
-            --primary-dark: #3451C7;
+            --primary: #0058be;
+            --primary-light: #d8e2ff;
+            --primary-dark: #004395;
             --sidebar-width: 240px;
-            --sidebar-bg: #fff;
-            --sidebar-border: #E8EAED;
-            --text-main: #1a1d23;
-            --text-muted: #6b7280;
-            --text-light: #9ca3af;
-            --bg-page: #F4F6FB;
-            --bg-card: #fff;
-            --nav-hover: #F4F6FB;
-            --nav-active-bg: #EEF1FD;
-            --nav-active-text: #4F6FEB;
-            --radius: 10px;
-            --font: 'DM Sans', system-ui, sans-serif;
+            --sidebar-bg: #f8fafc;
+            --sidebar-border: rgba(194, 198, 214, 0.3);
+            --text-main: #131b2e;
+            --text-muted: #424754;
+            --text-light: #727785;
+            --bg-page: #faf8ff;
+            --bg-card: #ffffff;
+            --nav-hover: #f2f3ff;
+            --nav-active-bg: #d8e2ff;
+            --nav-active-text: #0058be;
+            --radius: 12px;
+            --font: 'Inter', system-ui, sans-serif;
         }
 
         *, *::before, *::after {
@@ -273,14 +283,15 @@
 
         .page-body {
             flex: 1;
-            padding: 24px;
+            padding: 16px 24px;
         }
 
         .card {
             background: var(--bg-card);
             border: 1px solid var(--sidebar-border);
             border-radius: var(--radius);
-            padding: 20px;
+            padding: 14px;
+            box-shadow: 0px 4px 16px rgba(15, 23, 42, 0.03);
         }
 
         .card-title {
@@ -296,14 +307,15 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 14px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--sidebar-border);
             border-radius: var(--radius);
-            padding: 16px 20px;
+            padding: 14px 18px;
+            box-shadow: 0px 4px 16px rgba(15, 23, 42, 0.03);
         }
 
         .stat-label {
@@ -334,7 +346,7 @@
 
         .main-grid {
             display: grid;
-            grid-template-columns: 1fr 340px;
+            grid-template-columns: 1fr 310px;
             gap: 16px;
         }
 
@@ -342,8 +354,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            padding: 8px 0;
+            gap: 8px;
+            padding: 4px 0;
         }
 
         .ring-container {
@@ -379,7 +391,7 @@
         }
 
         .macro-item {
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         .macro-header {
@@ -415,7 +427,7 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
 
         .filter-btn {
@@ -435,19 +447,20 @@
         }
 
         .filter-btn.active {
-            background: var(--primary);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: #fff;
-            border-color: var(--primary);
+            border-color: transparent;
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
         }
 
         .meal-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px;
+            padding: 10px 12px;
             border-radius: 8px;
             background: var(--bg-page);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             transition: transform 0.2s;
             border: 1px solid transparent;
         }
@@ -474,16 +487,18 @@
             font-size: 12.5px;
             font-weight: 600;
             color: #fff;
-            background: var(--primary);
+            background: linear-gradient(135deg, #0058be 0%, #004395 100%);
             border: none;
             cursor: pointer;
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 6px;
-            transition: 0.15s;
+            box-shadow: 0 4px 12px rgba(0, 88, 190, 0.2);
+            transition: all 0.2s ease;
         }
 
         .btn-add:hover {
-            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 88, 190, 0.3);
         }
 
         .btn-generate-full {
@@ -495,18 +510,19 @@
             font-size: 13.5px;
             font-weight: 600;
             color: #fff;
-            background: var(--primary);
+            background: linear-gradient(135deg, #0058be 0%, #006c49 100%);
             border: none;
             cursor: pointer;
-            padding: 14px;
+            padding: 12px;
             border-radius: 8px;
-            transition: 0.2s;
-            margin-top: 16px;
+            box-shadow: 0 6px 16px rgba(0, 88, 190, 0.25);
+            transition: all 0.2s ease;
+            margin-top: 8px;
         }
 
         .btn-generate-full:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 88, 190, 0.35);
         }
 
         .sidebar-overlay {
@@ -568,17 +584,14 @@
 <div class="app-layout">
 
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <svg class="brand-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor"
-                      fill-rule="evenodd"/>
-            </svg>
-            <span class="brand-name">Sahaayata</span>
+        <div class="sidebar-brand" style="gap: 0px;">
+            <img src="/images/logo.svg" alt="Sahaayata Logo" style="height: 48px; width: auto; object-fit: contain; margin-left: -8px;">
+            <span class="brand-name ai-gradient-text" style="font-family: 'DM Sans', sans-serif; font-size: 24px; margin-left: -4px;">Sahaayata</span>
         </div>
 
         <div class="sidebar-user">
             <img class="user-avatar"
-                 src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80"
+                 src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=0058be&color=fff&size=80"
                  alt="avatar"/>
             <div>
                 <p class="user-name"><%= user.getUsername() %>
@@ -661,7 +674,7 @@
             <div style="display:flex;align-items:center;gap:10px;">
                 <span style="font-size:13px;color:var(--text-light);">Today, <%= new java.text.SimpleDateFormat("MMM d").format(new java.util.Date()) %></span>
                 <a href="/settings">
-                    <img src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80"
+                    <img src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=0058be&color=fff&size=80"
                          width="32" height="32" style="border-radius:50%;" alt="avatar"/>
                 </a>
             </div>
@@ -699,7 +712,7 @@
                             <div class="ring-container">
                                 <svg width="160" height="160" viewBox="0 0 160 160">
                                     <circle cx="80" cy="80" r="68" fill="none" stroke="#E8EAED" stroke-width="12"/>
-                                    <circle id="calorie-ring" cx="80" cy="80" r="68" fill="none" stroke="#4F6FEB"
+                                    <circle id="calorie-ring" cx="80" cy="80" r="68" fill="none" stroke="#0058be"
                                             stroke-width="12" stroke-linecap="round" stroke-dasharray="427.26"
                                             stroke-dashoffset="427.26" class="progress-ring__circle"/>
                                 </svg>
@@ -746,12 +759,12 @@
                 </div>
 
                 <div class="card" style="align-self:start;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
                         <p class="card-title" style="margin:0;">TODAY'S MEALS</p>
                         <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: 600;">For <%= remaining %> kcal</span>
                     </div>
 
-                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Select a goal to get
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Select a goal to get
                         filtered suggestions:</p>
 
                     <div class="filter-container">
@@ -768,7 +781,7 @@
                             <div><p class="meal-name">Breakfast</p>
                                 <p class="meal-cal"><%= breakfastCals %> kcal logged</p></div>
                             <button class="btn-add" id="btn-add-breakfast"
-                                    onclick="window.location.href='/log-meal?meal=Breakfast&filter=High%20Protein'">+
+                                    onclick="window.location.href='/log-meal?meal=Breakfast&amp;filter=High%20Protein'">+
                                 Add
                             </button>
                         </div>
@@ -776,27 +789,26 @@
                             <div><p class="meal-name">Lunch</p>
                                 <p class="meal-cal"><%= lunchCals %> kcal logged</p></div>
                             <button class="btn-add" id="btn-add-lunch"
-                                    onclick="window.location.href='/log-meal?meal=Lunch&filter=High%20Protein'">+ Add
+                                    onclick="window.location.href='/log-meal?meal=Lunch&amp;filter=High%20Protein'">+ Add
                             </button>
                         </div>
                         <div class="meal-item">
                             <div><p class="meal-name">Dinner</p>
                                 <p class="meal-cal"><%= dinnerCals %> kcal logged</p></div>
                             <button class="btn-add" id="btn-add-dinner"
-                                    onclick="window.location.href='/log-meal?meal=Dinner&filter=High%20Protein'">+ Add
+                                    onclick="window.location.href='/log-meal?meal=Dinner&amp;filter=High%20Protein'">+ Add
                             </button>
                         </div>
                         <div class="meal-item">
                             <div><p class="meal-name">Snacks</p>
                                 <p class="meal-cal"><%= snacksCals %> kcal logged</p></div>
                             <button class="btn-add" id="btn-add-snacks"
-                                    onclick="window.location.href='/log-meal?meal=Snacks&filter=High%20Protein'">+ Add
+                                    onclick="window.location.href='/log-meal?meal=Snacks&amp;filter=High%20Protein'">+ Add
                             </button>
                         </div>
                     </div>
 
-                    <button class="btn-generate-full" onclick="goToGeneratePage()"
-                            style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #fff; background: var(--primary); border: none; cursor: pointer; padding: 14px; border-radius: 8px; transition: 0.2s; margin-top: 16px;">
+                    <button class="btn-generate-full" onclick="goToGeneratePage()">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                              stroke-width="2">
                             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
@@ -813,8 +825,8 @@
     /* Sahaayata Custom UI Variables for n8n Chat */
     :root {
         /* 1. Main Colors (Blue instead of Pink/Navy) */
-        --chat--color-primary: #5876ED !important;
-        --chat--color-secondary: #4a63c7 !important;
+        --chat--color-primary: #0058be !important;
+        --chat--color-secondary: #004395 !important;
 
         /* 2. Chat Window Shape & Shadow (Modern UI) */
 
@@ -825,19 +837,19 @@
         }
 
         /* 3. Header Styling (Blue Gradient instead of Black) */
-        --chat--header--background: linear-gradient(135deg, #5876ED, #738cf0) !important;
+        --chat--header--background: linear-gradient(135deg, #0058be, #006c49) !important;
         --chat--header--color: #ffffff !important;
 
         /* 4. Message Bubbles (Rounded & Soft) */
         --chat--message--border-radius: 12px !important;
-        --chat--message--background--user: #5876ED !important;
+        --chat--message--background--user: #0058be !important;
         --chat--message--color--user: #ffffff !important;
-        --chat--message--background--bot: #f4f6fb !important;
-        --chat--message--color--bot: #333333 !important;
+        --chat--message--background--bot: #f2f3ff !important;
+        --chat--message--color--bot: #131b2e !important;
 
         /* 5. The Floating Toggle Button */
-        --chat--toggle--background: #5876ED !important;
-        --chat--toggle--hover--background: #4a63c7 !important;
+        --chat--toggle--background: #0058be !important;
+        --chat--toggle--hover--background: #004395 !important;
     }
 
     .chat-window {
@@ -875,7 +887,7 @@
 
         theme: {
             color: {
-                primary: '#5876ED'
+                primary: '#0058be'
             }
         }
     });
@@ -888,7 +900,8 @@
     }
 
     const ring = document.getElementById('calorie-ring');
-    const consumed = <%= consumed %>, target = <%= tdee %>;
+    const consumed = Number("<%= consumed %>");
+    const target = Number("<%= tdee %>");
     const percent = Math.min(consumed / target, 1);
     ring.style.strokeDashoffset = 427.26 - percent * 427.26;
 
@@ -917,7 +930,7 @@
     }
 
     function goToGeneratePage() {
-        const remainingCals = <%= remaining %>;
+        const remainingCals = Number("<%= remaining %>");
         window.location.href = '/generate-plan?filter=' + encodeURIComponent(currentFilter) + '&target=' + remainingCals;
     }
 </script>

@@ -13,9 +13,16 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Settings — Sahaayata</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=DM+Sans:wght@600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <style>
-        :root{--primary:#4F6FEB;--primary-light:#EEF1FD;--primary-dark:#3451C7;--sidebar-width:240px;--sidebar-bg:#fff;--sidebar-border:#E8EAED;--text-main:#1a1d23;--text-muted:#6b7280;--text-light:#9ca3af;--bg-page:#F4F6FB;--bg-card:#fff;--nav-hover:#F4F6FB;--nav-active-bg:#EEF1FD;--nav-active-text:#4F6FEB;--radius:10px;--font:'DM Sans',system-ui,sans-serif;}
+        .ai-gradient-text {
+            background: linear-gradient(135deg, #0058be 0%, #006c49 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        :root{--primary:#0058be;--primary-light:#d8e2ff;--primary-dark:#004395;--sidebar-width:240px;--sidebar-bg:#f8fafc;--sidebar-border:rgba(194, 198, 214, 0.3);--text-main:#131b2e;--text-muted:#424754;--text-light:#727785;--bg-page:#faf8ff;--bg-card:#ffffff;--nav-hover:#f2f3ff;--nav-active-bg:#d8e2ff;--nav-active-text:#0058be;--radius:12px;--font:'Inter',system-ui,sans-serif;}
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:var(--font);background:var(--bg-page);color:var(--text-main);min-height:100vh;}
         .app-layout{display:flex;min-height:100vh;}
@@ -35,21 +42,22 @@
         .topbar{background:var(--bg-card);border-bottom:1px solid var(--sidebar-border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
         .topbar-title{font-size:16px;font-weight:600;}
         .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text-main);}
-        .page-body{flex:1;padding:24px;max-width:680px;}
+        .page-body{flex:1;padding:16px 24px;max-width:680px;}
 
         /* settings */
-        .settings-section{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);margin-bottom:18px;overflow:hidden;}
+        .settings-section{background:var(--bg-card);border:1px solid var(--sidebar-border);border-radius:var(--radius);margin-bottom:18px;overflow:hidden;box-shadow:0px 4px 16px rgba(15, 23, 42, 0.03);}
         .section-header{padding:16px 20px;border-bottom:1px solid var(--sidebar-border);}
         .section-title{font-size:14px;font-weight:600;}
         .section-sub{font-size:12px;color:var(--text-light);margin-top:2px;}
         .section-body{padding:20px;}
         .form-group{margin-bottom:16px;}
         .form-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
-        .form-input,.form-select{width:100%;padding:9px 12px;border:1px solid var(--sidebar-border);border-radius:8px;font-size:14px;font-family:var(--font);color:var(--text-main);background:#fff;outline:none;transition:border-color .15s;}
+        .form-input{width:100%;padding:9px 16px;border:1px solid var(--sidebar-border);border-radius:99px !important;font-size:14px;font-family:var(--font);color:var(--text-main);background:#fff;outline:none;transition:border-color .15s;}
+        .form-select{width:100%;padding:9px 40px 9px 16px;border:1px solid var(--sidebar-border);border-radius:99px !important;font-size:14px;font-family:var(--font);color:var(--text-main);background:#fff;outline:none;transition:border-color .15s;cursor:pointer;}
         .form-input:focus,.form-select:focus{border-color:var(--primary);}
         .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-        .btn-primary{background:var(--primary);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;transition:background .15s;}
-        .btn-primary:hover{background:var(--primary-dark);}
+        .btn-primary{background:linear-gradient(135deg, #0058be 0%, #004395 100%);color:#fff;border:none;padding:9px 24px;border-radius:99px !important;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .2s ease;box-shadow:0 4px 12px rgba(0, 88, 190, 0.2);}
+        .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0, 88, 190, 0.3);}
 
         /* avatar section */
         .avatar-row{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
@@ -71,12 +79,12 @@
 <body>
 <div class="app-layout">
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <svg class="brand-icon" viewBox="0 0 48 48" fill="none"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"/></svg>
-            <span class="brand-name">Sahaayata</span>
+        <div class="sidebar-brand" style="gap: 0px;">
+            <img src="/images/logo.svg" alt="Sahaayata Logo" style="height: 48px; width: auto; object-fit: contain; margin-left: -8px;">
+            <span class="brand-name ai-gradient-text" style="font-family: 'DM Sans', sans-serif; font-size: 24px; margin-left: -4px;">Sahaayata</span>
         </div>
         <div class="sidebar-user">
-            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=80" alt="avatar"/>
+            <img class="user-avatar" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=0058be&color=fff&size=80" alt="avatar"/>
             <div><p class="user-name"><%= user.getUsername() %></p><p class="user-role">Member</p></div>
         </div>
         <nav class="sidebar-nav">
@@ -119,7 +127,7 @@
                         <p style="color: #dc2626; font-size: 13.5px; margin-bottom: 16px; font-weight: 600; background: #fef2f2; padding: 10px 14px; border-radius: 8px; border: 1px solid #fecaca;">❌ <%= request.getAttribute("errorProfile") %></p>
                     <% } %>
                     <div class="avatar-row">
-                        <img class="avatar-lg" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=4F6FEB&color=fff&size=128" alt="avatar"/>
+                        <img class="avatar-lg" src="https://ui-avatars.com/api/?name=<%= user.getUsername() %>&background=0058be&color=fff&size=128" alt="avatar"/>
                         <div>
                             <p style="font-size:14px;font-weight:600;"><%= user.getUsername() %></p>
                             <p style="font-size:13px;color:var(--text-light);">Avatar generated from name</p>
