@@ -342,4 +342,35 @@ public class AuthController {
         return "redirect:/change-password";
     }
 
+    // ==========================================
+    // 7. FORGOT PASSWORD LOGIC (Simple Implementation)
+    // ==========================================
+    @PostMapping("/forgot-password")
+    @ResponseBody
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String newPassword = payload.get("newPassword");
+
+        if (email == null || newPassword == null || email.trim().isEmpty() || newPassword.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "Email and New Password are required."));
+        }
+
+        UserCredential user = userRepository.findByEmail(email.trim());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("message", "No account found with this email."));
+        }
+
+        if (newPassword.length() < 8) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "New password must be at least 8 characters long."));
+        }
+
+        user.setPassword(UserServiceUtil.hashPassword(newPassword));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Collections.singletonMap("message", "Password reset successfully. You can now log in."));
+    }
+
 }
