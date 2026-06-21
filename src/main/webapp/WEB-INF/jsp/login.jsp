@@ -195,7 +195,7 @@
 
             <!-- Forgot Password Form -->
             <form class="flex flex-col gap-4 hidden" id="forgotPasswordForm">
-                <div class="flex flex-col gap-1">
+                <div class="flex flex-col gap-1" id="emailGroup">
                     <label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" for="resetEmail">
                         <span class="material-symbols-outlined text-sm">mail</span>
                         Registered Email
@@ -203,19 +203,32 @@
                     <input class="w-full h-10 px-3 rounded-xl border border-outline-variant bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md" id="resetEmail" name="email" placeholder="you@example.com" required="" type="email"/>
                 </div>
                 
-                <div class="flex flex-col gap-1">
+                <div class="flex flex-col gap-1 hidden" id="otpGroup">
+                    <label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" for="resetOtp">
+                        <span class="material-symbols-outlined text-sm">pin</span>
+                        6-Digit OTP
+                    </label>
+                    <input class="w-full h-10 px-3 rounded-xl border border-outline-variant bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md tracking-widest text-center" id="resetOtp" name="otp" placeholder="123456" type="text" maxlength="6"/>
+                </div>
+
+                <div class="flex flex-col gap-1 hidden" id="newPassGroup">
                     <label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" for="newPassword">
                         <span class="material-symbols-outlined text-sm">lock_reset</span>
                         New Password
                     </label>
                     <div class="relative">
-                        <input class="w-full h-10 px-3 rounded-xl border border-outline-variant bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md" id="newPassword" name="newPassword" placeholder="Minimum 8 characters" required="" type="password"/>
+                        <input class="w-full h-10 px-3 rounded-xl border border-outline-variant bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md" id="newPassword" name="newPassword" placeholder="Minimum 8 characters" type="password"/>
                     </div>
                 </div>
 
                 <div id="forgot-status" class="hidden text-sm font-medium text-center" aria-live="polite"></div>
 
-                <button class="mt-2 ai-gradient-bg text-on-primary font-label-sm text-label-sm py-2.5 rounded-xl ambient-shadow ambient-shadow-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 group" type="submit">
+                <button class="mt-2 ai-gradient-bg text-on-primary font-label-sm text-label-sm py-2.5 rounded-xl ambient-shadow ambient-shadow-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 group" type="button" id="sendOtpBtn">
+                    <span>Send OTP</span>
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
+                </button>
+
+                <button class="mt-2 ai-gradient-bg text-on-primary font-label-sm text-label-sm py-2.5 rounded-xl ambient-shadow ambient-shadow-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 group hidden" type="submit" id="resetPassBtn">
                     <span>Reset Password</span>
                     <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">check_circle</span>
                 </button>
@@ -311,20 +324,21 @@
 
                 // Handle Response
                 if (resp.ok) {
-                    // Success Case
+                    const data = await resp.json();
                     if (statusEl) {
                         statusEl.className = 'mt-2 text-sm text-green-600 text-center block';
                         statusEl.textContent = 'Login successful! Redirecting...';
                     }
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
+                        window.location.href = data.redirectUrl || '/dashboard';
                     }, 1000);
                 } else {
                     // Error Case
-                    const err = await resp.text();
+                    const err = await resp.json().catch(() => ({}));
+                    const msg = err.message || 'Invalid login credentials.';
                     if (statusEl) {
                         statusEl.className = 'mt-2 text-sm text-red-600 text-center block';
-                        statusEl.textContent = err || 'Invalid login credentials.';
+                        statusEl.textContent = msg;
                     }
                     if (submitBtn) {
                         submitBtn.disabled = false;
@@ -368,8 +382,18 @@
             registerLinkContainer.classList.add('hidden');
             forgotForm.classList.remove('hidden');
             formHeading.innerHTML = 'Reset <span class="ai-gradient-text">Password</span>';
-            formSubHeading.textContent = 'Enter your email and a new password to recover access.';
+            formSubHeading.textContent = 'Enter your email to receive an OTP.';
             if(statusEl) statusEl.className = 'hidden';
+            
+            // Reset to step 1
+            document.getElementById('emailGroup').classList.remove('hidden');
+            document.getElementById('resetEmail').disabled = false;
+            document.getElementById('otpGroup').classList.add('hidden');
+            document.getElementById('newPassGroup').classList.add('hidden');
+            document.getElementById('sendOtpBtn').classList.remove('hidden');
+            document.getElementById('resetPassBtn').classList.add('hidden');
+            document.getElementById('resetOtp').removeAttribute('required');
+            document.getElementById('newPassword').removeAttribute('required');
         });
 
         backToLoginBtn.addEventListener('click', (e) => {
@@ -383,41 +407,71 @@
             if(forgotStatus) forgotStatus.className = 'hidden';
         });
 
-        forgotForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            
-            const fStatusEl = document.getElementById('forgot-status');
-            if (fStatusEl) {
-                fStatusEl.textContent = '';
-                fStatusEl.className = 'hidden';
-            }
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const resetPassBtn = document.getElementById('resetPassBtn');
+        const fStatusEl = document.getElementById('forgot-status');
 
-            const submitBtn = forgotForm.querySelector('button[type="submit"]');
-            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
-
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = `<span class="animate-spin material-symbols-outlined">sync</span> <span>Resetting...</span>`;
-                submitBtn.classList.add('opacity-80');
-            }
-
-            const payload = {
-                email: (document.getElementById('resetEmail') || {}).value?.trim() || '',
-                newPassword: (document.getElementById('newPassword') || {}).value || '',
-            };
-
-            if (!payload.email || !payload.newPassword) {
-                if (fStatusEl) {
-                    fStatusEl.className = 'mt-2 text-sm text-red-600 text-center block';
-                    fStatusEl.textContent = 'Please complete all fields.';
-                }
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnHtml;
-                    submitBtn.classList.remove('opacity-80');
-                }
+        sendOtpBtn.addEventListener('click', async function () {
+            const email = document.getElementById('resetEmail').value.trim();
+            if (!email) {
+                fStatusEl.className = 'mt-2 text-sm text-red-600 text-center block';
+                fStatusEl.textContent = 'Please enter your registered email.';
                 return;
             }
+
+            const originalBtnHtml = sendOtpBtn.innerHTML;
+            sendOtpBtn.disabled = true;
+            sendOtpBtn.innerHTML = `<span class="animate-spin material-symbols-outlined">sync</span> <span>Sending OTP...</span>`;
+            
+            try {
+                const resp = await fetch('/forgot-password/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                if (resp.ok) {
+                    fStatusEl.className = 'mt-2 text-sm text-green-600 text-center block';
+                    fStatusEl.textContent = 'OTP sent! Please check your inbox.';
+                    
+                    document.getElementById('emailGroup').classList.add('hidden');
+                    document.getElementById('otpGroup').classList.remove('hidden');
+                    document.getElementById('newPassGroup').classList.remove('hidden');
+                    sendOtpBtn.classList.add('hidden');
+                    resetPassBtn.classList.remove('hidden');
+                    
+                    document.getElementById('resetOtp').setAttribute('required', 'true');
+                    document.getElementById('newPassword').setAttribute('required', 'true');
+                    formSubHeading.textContent = 'Enter the OTP and your new password.';
+                } else {
+                    const err = await resp.json().catch(() => ({}));
+                    fStatusEl.className = 'mt-2 text-sm text-red-600 text-center block';
+                    fStatusEl.textContent = err.message || 'Failed to send OTP.';
+                }
+            } catch (networkErr) {
+                fStatusEl.className = 'mt-2 text-sm text-red-600 text-center block';
+                fStatusEl.textContent = 'Network error. Please try again.';
+            } finally {
+                sendOtpBtn.disabled = false;
+                sendOtpBtn.innerHTML = originalBtnHtml;
+            }
+        });
+
+        forgotForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            fStatusEl.textContent = '';
+            fStatusEl.className = 'hidden';
+
+            const originalBtnHtml = resetPassBtn.innerHTML;
+            resetPassBtn.disabled = true;
+            resetPassBtn.innerHTML = `<span class="animate-spin material-symbols-outlined">sync</span> <span>Resetting...</span>`;
+            resetPassBtn.classList.add('opacity-80');
+
+            const payload = {
+                email: document.getElementById('resetEmail').value.trim(),
+                otp: document.getElementById('resetOtp').value.trim(),
+                newPassword: document.getElementById('newPassword').value
+            };
 
             try {
                 const resp = await fetch('/forgot-password', {
@@ -427,36 +481,24 @@
                 });
 
                 if (resp.ok) {
-                    if (fStatusEl) {
-                        fStatusEl.className = 'mt-2 text-sm text-green-600 text-center block';
-                        fStatusEl.textContent = 'Password reset successfully! Returning to login...';
-                    }
+                    fStatusEl.className = 'mt-2 text-sm text-green-600 text-center block';
+                    fStatusEl.textContent = 'Password reset successfully! Returning to login...';
                     setTimeout(() => {
                         backToLoginBtn.click();
                         forgotForm.reset();
                     }, 2000);
                 } else {
                     const err = await resp.json().catch(() => ({}));
-                    if (fStatusEl) {
-                        fStatusEl.className = 'mt-2 text-sm text-red-600 text-center block';
-                        fStatusEl.textContent = err.message || 'Failed to reset password.';
-                    }
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnHtml;
-                        submitBtn.classList.remove('opacity-80');
-                    }
+                    fStatusEl.className = 'mt-2 text-sm text-red-600 text-center block';
+                    fStatusEl.textContent = err.message || 'Failed to reset password.';
                 }
             } catch (networkErr) {
-                if (fStatusEl) {
-                    fStatusEl.className = 'mt-2 text-sm text-red-600 text-center block';
-                    fStatusEl.textContent = 'Network error. Please try again.';
-                }
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnHtml;
-                    submitBtn.classList.remove('opacity-80');
-                }
+                fStatusEl.className = 'mt-2 text-sm text-red-600 text-center block';
+                fStatusEl.textContent = 'Network error. Please try again.';
+            } finally {
+                resetPassBtn.disabled = false;
+                resetPassBtn.innerHTML = originalBtnHtml;
+                resetPassBtn.classList.remove('opacity-80');
             }
         });
     }

@@ -18,6 +18,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.time.LocalDateTime;
+import com.sahaayata.minorproject.service.EmailService;
 
 @Controller
 public class AuthController {
@@ -30,6 +32,22 @@ public class AuthController {
 
     @Autowired
     private DailyLogRepository  dailyLogRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    // Helper class for OTP storage
+    private static class OtpDetails {
+        String otp;
+        LocalDateTime expiryTime;
+        public OtpDetails(String otp, LocalDateTime expiryTime) {
+            this.otp = otp;
+            this.expiryTime = expiryTime;
+        }
+    }
+
+    private Map<String, OtpDetails> otpStore = new HashMap<>();
+    private Map<String, UserCredential> pendingUsers = new HashMap<>();
 
     // 1. PAGE VIEW METHODS (GET Requests)
 
@@ -48,7 +66,7 @@ public class AuthController {
         UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
 
         if (user == null) {
-            return "redirect:/login";
+            return "redirect:/";
         }
 
         // Agar user login hai lekin Onboarding bacha hai, wahan bhejo
@@ -98,7 +116,7 @@ public class AuthController {
     @GetMapping("/onboarding")
     public String showOnboardingPage(HttpSession session) {
         UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
-        if (user == null) return "redirect:/login";
+        if (user == null) return "redirect:/";
 
         // Agar already complete hai, to wapas dashboard bhejo
         if (user.isOnboardingCompleted()) {
@@ -117,7 +135,7 @@ public class AuthController {
         // Security Check
         UserCredential user = (UserCredential) session.getAttribute("loggedInUser");
         if (user == null) {
-            return "redirect:/login";
+            return "redirect:/";
         }
 
         // Database se fresh data fetch karo (Recommended)
@@ -127,7 +145,7 @@ public class AuthController {
             session.setAttribute("loggedInUser", dbUser); // Session Refresh
         } else {
             session.invalidate(); // Agar user DB me nahi hai to logout
-            return "redirect:/login";
+            return "redirect:/";
         }
 
         return "settings"; // settings.jsp load karega
@@ -138,7 +156,7 @@ public class AuthController {
     public String updateProfile(@RequestParam("username") String username,
                                 HttpSession session, RedirectAttributes redirectAttributes) {
         UserCredential currentUser = (UserCredential) session.getAttribute("loggedInUser");
-        if (currentUser == null) return "redirect:/login";
+        if (currentUser == null) return "redirect:/";
 
         UserCredential dbUser = userRepository.findById(currentUser.getId()).orElse(null);
         if (dbUser != null) {
@@ -165,7 +183,7 @@ public class AuthController {
                               @RequestParam("activityLevel") String activityLevel,
                               HttpSession session, RedirectAttributes redirectAttributes) {
         UserCredential currentUser = (UserCredential) session.getAttribute("loggedInUser");
-        if (currentUser == null) return "redirect:/login";
+        if (currentUser == null) return "redirect:/";
 
         UserCredential dbUser = userRepository.findById(currentUser.getId()).orElse(null);
         if (dbUser != null) {
@@ -185,24 +203,65 @@ public class AuthController {
 
     // 3. API METHODS (POST Requests - JSON)
 
-    // --- REGISTER LOGIC ---
+    // --- REGISTER LOGIC (Step 1: Send OTP) ---
+    @PostMapping("/register/send-otp")
+    @ResponseBody
+    public ResponseEntity<?> sendRegistrationOtp(@RequestBody UserCredential user) {
+        if (userRepository.findByEmail(user.getEmail()) != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "Email is already registered."));
+        }
+        if (userRepository.findByUsername(user.getUsername()) != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "Username is already taken."));
+        }
+        
+        String otp = String.valueOf((int)(Math.random() * 900000) + 100000);
+        otpStore.put(user.getEmail(), new OtpDetails(otp, LocalDateTime.now().plusMinutes(5)));
+        pendingUsers.put(user.getEmail(), user);
+        
+        emailService.sendOtp(user.getEmail(), otp);
+        
+        return ResponseEntity.ok(Collections.singletonMap("message", "OTP sent to your email."));
+    }
+
+    // --- REGISTER LOGIC (Step 2: Verify OTP & Save) ---
     @PostMapping("/register")
-    @ResponseBody // JSON return karne ke liye
-    public ResponseEntity<?> registerUser(@RequestBody UserCredential user) {
+    @ResponseBody
+    public ResponseEntity<?> registerUser(@RequestBody Map<String, String> payload, HttpSession session) {
+        String email = payload.get("email");
+        String otp = payload.get("otp");
+        
+        OtpDetails details = otpStore.get(email);
+        if (details == null || !details.otp.equals(otp)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "Invalid OTP."));
+        }
+        if (LocalDateTime.now().isAfter(details.expiryTime)) {
+            otpStore.remove(email);
+            pendingUsers.remove(email);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "OTP has expired. Please try registering again."));
+        }
+        
+        UserCredential user = pendingUsers.get(email);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "Registration session expired. Try again."));
+        }
+        
         try {
-            // Service call karke user save karein
             String hashedPass = UserServiceUtil.hashPassword(user.getPassword());
             user.setPassword(hashedPass);
             UserCredential registeredUser = userService.registerUser(user);
-            return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(
-                    Collections.singletonMap("message", e.getMessage()),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
-        catch (Exception e) {
+            
+            session.setAttribute("loggedInUser", registeredUser);
+            
+            otpStore.remove(email);
+            pendingUsers.remove(email);
+            
+            return ResponseEntity.ok(Collections.singletonMap("redirectUrl", "/onboarding"));
+        } catch (Exception e) {
             return new ResponseEntity<>(
                     Collections.singletonMap("message", "Registration failed due to server error."),
                     HttpStatus.INTERNAL_SERVER_ERROR
@@ -343,17 +402,51 @@ public class AuthController {
     }
 
     // ==========================================
-    // 7. FORGOT PASSWORD LOGIC (Simple Implementation)
+    // 7. FORGOT PASSWORD LOGIC (With OTP)
     // ==========================================
+    @PostMapping("/forgot-password/send-otp")
+    @ResponseBody
+    public ResponseEntity<?> sendForgotOtp(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "Email is required."));
+        }
+        
+        UserCredential user = userRepository.findByEmail(email.trim());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("message", "No account found with this email."));
+        }
+        
+        String otp = String.valueOf((int)(Math.random() * 900000) + 100000);
+        otpStore.put(email, new OtpDetails(otp, LocalDateTime.now().plusMinutes(5)));
+        emailService.sendOtp(email, otp);
+        
+        return ResponseEntity.ok(Collections.singletonMap("message", "OTP sent to your email."));
+    }
+
     @PostMapping("/forgot-password")
     @ResponseBody
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
+        String otp = payload.get("otp");
         String newPassword = payload.get("newPassword");
 
-        if (email == null || newPassword == null || email.trim().isEmpty() || newPassword.trim().isEmpty()) {
+        if (email == null || otp == null || newPassword == null || email.trim().isEmpty() || otp.trim().isEmpty() || newPassword.trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Collections.singletonMap("message", "Email and New Password are required."));
+                    .body(Collections.singletonMap("message", "Email, OTP, and New Password are required."));
+        }
+
+        OtpDetails details = otpStore.get(email);
+        if (details == null || !details.otp.equals(otp)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "Invalid OTP."));
+        }
+        if (LocalDateTime.now().isAfter(details.expiryTime)) {
+            otpStore.remove(email);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", "OTP has expired. Please request a new one."));
         }
 
         UserCredential user = userRepository.findByEmail(email.trim());
@@ -369,6 +462,8 @@ public class AuthController {
 
         user.setPassword(UserServiceUtil.hashPassword(newPassword));
         userRepository.save(user);
+        
+        otpStore.remove(email);
 
         return ResponseEntity.ok(Collections.singletonMap("message", "Password reset successfully. You can now log in."));
     }

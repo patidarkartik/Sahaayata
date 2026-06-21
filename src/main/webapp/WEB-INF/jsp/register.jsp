@@ -184,7 +184,17 @@
 </div>
 </div>
 
-<div id="form-status" class="hidden text-sm font-medium text-center" aria-live="polite"></div>
+                        <!-- OTP Field (Hidden Initially) -->
+                        <div class="flex flex-col gap-1 hidden" id="otpGroup">
+                            <label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" for="regOtp">
+                                <span class="material-symbols-outlined text-sm">pin</span>
+                                Email Verification OTP
+                            </label>
+                            <input class="w-full h-10 px-3 rounded-xl border border-outline-variant bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-body-md text-body-md tracking-widest text-center" id="regOtp" name="otp" placeholder="123456" type="text" maxlength="6"/>
+                            <p class="text-xs text-on-surface-variant text-center mt-1">Please check your email for the 6-digit code.</p>
+                        </div>
+
+                        <div id="form-status" class="hidden text-sm font-medium text-center" aria-live="polite"></div>
 
 <!-- Terms Checkbox -->
 <div class="flex items-start gap-2 mt-1">
@@ -194,7 +204,7 @@
                         </label>
 </div>
 <!-- Register Button -->
-<button class="ai-gradient-bg text-on-primary font-label-sm text-label-sm py-2.5 rounded-xl ambient-shadow ambient-shadow-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 group" type="submit">
+<button class="ai-gradient-bg text-on-primary font-label-sm text-label-sm py-2.5 rounded-xl ambient-shadow ambient-shadow-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 group" type="submit" id="mainSubmitBtn">
 <span>Register Account</span>
 <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
 </button>
@@ -233,7 +243,6 @@
         form.addEventListener('submit', async function (e) {
             e.preventDefault();
             
-            // Validate terms
             const termsChecked = document.getElementById('terms').checked;
             if (!termsChecked) {
                 statusEl.className = 'mt-2 text-sm text-red-600 text-center block';
@@ -246,76 +255,121 @@
                 statusEl.className = 'hidden';
             }
 
-            const submitBtn = form.querySelector('button[type="submit"]');
+            const submitBtn = document.getElementById('mainSubmitBtn');
             const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+            const otpGroup = document.getElementById('otpGroup');
+            const isOtpStep = !otpGroup.classList.contains('hidden');
 
-            // Disable button
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = `<span class="animate-spin material-symbols-outlined">sync</span> <span>Creating Account...</span>`;
+                submitBtn.innerHTML = `<span class="animate-spin material-symbols-outlined">sync</span> <span>Processing...</span>`;
                 submitBtn.classList.add('opacity-80');
             }
 
-            const payload = {
-                username: (document.getElementById('username') || {}).value?.trim() || '',
-                email: (document.getElementById('email') || {}).value?.trim() || '',
-                password: (document.getElementById('password') || {}).value || '',
-            };
+            if (!isOtpStep) {
+                // STEP 1: Request OTP
+                const payload = {
+                    username: (document.getElementById('username') || {}).value?.trim() || '',
+                    email: (document.getElementById('email') || {}).value?.trim() || '',
+                    password: (document.getElementById('password') || {}).value || '',
+                };
 
-            if (!payload.username || !payload.email || !payload.password) {
-                if (statusEl) {
-                    statusEl.className = 'mt-2 text-sm text-red-600 text-center block';
-                    statusEl.textContent = 'Please complete all fields.';
-                }
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnHtml;
-                    submitBtn.classList.remove('opacity-80');
-                }
-                return;
-            }
-
-            try {
-                // Send Request to Backend
-                const resp = await fetch('/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-
-                // Handle Response
-                if (resp.ok) {
-                    // Success Case
-                    if (statusEl) {
-                        statusEl.className = 'mt-2 text-sm text-green-600 text-center block';
-                        statusEl.textContent = 'Account created successfully! Redirecting to login...';
-                    }
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 1500);
-                } else {
-                    // Error Case (e.g., Email already exists)
-                    const err = await resp.json().catch(() => null);
-                    const msg = (err && (err.message || err.error)) || 'Registration failed. Please try again.';
+                if (!payload.username || !payload.email || !payload.password) {
                     if (statusEl) {
                         statusEl.className = 'mt-2 text-sm text-red-600 text-center block';
-                        statusEl.textContent = msg;
+                        statusEl.textContent = 'Please complete all fields.';
                     }
                     if (submitBtn) {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnHtml;
                         submitBtn.classList.remove('opacity-80');
                     }
+                    return;
                 }
-            } catch (networkErr) {
-                if (statusEl) {
+
+                try {
+                    const resp = await fetch('/register/send-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+
+                    if (resp.ok) {
+                        statusEl.className = 'mt-2 text-sm text-green-600 text-center block';
+                        statusEl.textContent = 'OTP sent! Please check your email inbox.';
+                        
+                        // Switch to step 2 UI
+                        document.getElementById('username').disabled = true;
+                        document.getElementById('email').disabled = true;
+                        document.getElementById('password').disabled = true;
+                        document.getElementById('terms').disabled = true;
+                        
+                        otpGroup.classList.remove('hidden');
+                        document.getElementById('regOtp').setAttribute('required', 'true');
+                        
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = `<span>Verify OTP & Complete</span><span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">check_circle</span>`;
+                        submitBtn.classList.remove('opacity-80');
+                    } else {
+                        const err = await resp.json().catch(() => ({}));
+                        const msg = err.message || 'Failed to send OTP.';
+                        statusEl.className = 'mt-2 text-sm text-red-600 text-center block';
+                        statusEl.textContent = msg;
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalBtnHtml;
+                            submitBtn.classList.remove('opacity-80');
+                        }
+                    }
+                } catch (networkErr) {
+                    statusEl.className = 'mt-2 text-sm text-red-600 text-center block';
+                    statusEl.textContent = 'Network error. Please try again.';
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHtml;
+                        submitBtn.classList.remove('opacity-80');
+                    }
+                }
+            } else {
+                // STEP 2: Verify OTP and Register
+                const payload = {
+                    email: document.getElementById('email').value.trim(),
+                    otp: document.getElementById('regOtp').value.trim(),
+                };
+
+                try {
+                    const resp = await fetch('/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        statusEl.className = 'mt-2 text-sm text-green-600 text-center block';
+                        statusEl.textContent = 'Account created successfully! Taking you to onboarding...';
+                        setTimeout(() => {
+                            window.location.href = data.redirectUrl || '/onboarding';
+                        }, 1500);
+                    } else {
+                        const err = await resp.json().catch(() => ({}));
+                        const msg = err.message || 'Verification failed. Please try again.';
+                        statusEl.className = 'mt-2 text-sm text-red-600 text-center block';
+                        statusEl.textContent = msg;
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = `<span>Verify OTP & Complete</span><span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">check_circle</span>`;
+                            submitBtn.classList.remove('opacity-80');
+                        }
+                    }
+                } catch (networkErr) {
                     statusEl.className = 'mt-2 text-sm text-red-600 text-center block';
                     statusEl.textContent = 'Network error. Please check your connection.';
-                }
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnHtml;
-                    submitBtn.classList.remove('opacity-80');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = `<span>Verify OTP & Complete</span><span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">check_circle</span>`;
+                        submitBtn.classList.remove('opacity-80');
+                    }
                 }
             }
         });
